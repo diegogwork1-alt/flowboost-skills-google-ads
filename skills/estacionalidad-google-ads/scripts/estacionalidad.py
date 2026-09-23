@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Calcula la estacionalidad de una cuenta de Google Ads desde la hoja del cliente.
 
-Baja la hoja con rclone (todas las pestañas), lee `datos-google-terminos` y
-`datos-google-is`, y saca el índice de estacionalidad mes a mes.
+Baja con rclone el archivo de ESTACIONALIDAD del cliente («Estacionalidad — <cliente>»,
+que NO es el de reportes), lee `terminos-mes` e `is-mes`, y saca el índice mes a mes.
 
-    python3 estacionalidad.py <URL_O_ID_DE_LA_HOJA>
+    python3 estacionalidad.py <URL_O_ID_DEL_ARCHIVO_DE_ESTACIONALIDAD>
     python3 estacionalidad.py <URL_O_ID> --familias familias.json
     python3 estacionalidad.py <URL_O_ID> --remoto midrive:
 
@@ -109,12 +109,23 @@ def main():
     print(f"Bajando la hoja {file_id[:12]}… con rclone")
     bajar(file_id, args.remoto, tmp)
 
-    terminos, pestanas = leer(tmp, 'datos-google-terminos')
+    # Nombres actuales primero; los de antes de separar el archivo, como respaldo.
+    terminos = pestanas = None
+    for nombre in ('terminos-mes', 'datos-google-terminos'):
+        terminos, pestanas = leer(tmp, nombre)
+        if terminos is not None:
+            break
     if terminos is None:
-        sys.exit(f"✗ No existe la pestaña 'datos-google-terminos'.\n"
-                 f"  La hoja tiene: {', '.join(pestanas)}\n"
-                 f"  → El Ads Script de esa cuenta todavía es el viejo. Actualízalo (ver INSTALACION.md).")
-    is_filas, _ = leer(tmp, 'datos-google-is')
+        sys.exit(f"✗ No encuentro la pestaña de términos ('terminos-mes').\n"
+                 f"  Este archivo tiene: {', '.join(pestanas)}\n"
+                 f"  → ¿Le has pasado el archivo de REPORTES en vez del de ESTACIONALIDAD?\n"
+                 f"    El de estacionalidad se llama «Estacionalidad — <cliente>» y lo crea el\n"
+                 f"    Ads Script en su primera pasada (ver INSTALACION.md).")
+    is_filas = None
+    for nombre in ('is-mes', 'datos-google-is'):
+        is_filas, _ = leer(tmp, nombre)
+        if is_filas is not None:
+            break
     is_filas = is_filas or []
 
     # ── Agregado ──

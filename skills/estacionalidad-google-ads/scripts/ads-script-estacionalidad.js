@@ -20,6 +20,9 @@
  *   4. Programar: Frecuencia diaria, a las 06:00.
  *      (No antes: las cifras de Google se consolidan hasta 3 h después de medianoche.)
  *   5. La hoja tiene que estar COMPARTIDA CON EDICIÓN con el Google que autoriza el script.
+ *   6. ESTACIONALIDAD: la primera pasada crea un SEGUNDO archivo («Estacionalidad — <cliente>»)
+ *      y escribe su URL en el registro. Pégala en SHEET_URL_ESTACIONAL y guarda. Ese archivo es
+ *      interno: NO se comparte con el cliente.
  *
  * DESDE UN MCC: usar la versión de abajo (MccApp) y no repetirlo por cliente.
  */
@@ -30,12 +33,15 @@ var CLIENTE   = 'NOMBRE_DEL_CLIENTE';
 var PESTANA   = 'datos-google';
 var DIAS      = 90;    // se reescriben los últimos 90 días en cada pasada
 
-// ── ESTACIONALIDAD (añadido 22-09-2026) ──
-// Pestañas APARTE. No se toca `datos-google`: esa tiene fórmulas y columnas acopladas
-// al Python (COLS + bloque_formulas + _comprobar_columnas). Estas dos son de solo datos,
-// las crea el script si no existen, y nada del reporte del cliente depende de ellas.
-var PESTANA_TERMINOS = 'datos-google-terminos';   // término × mes: en qué mes busca la gente
-var PESTANA_IS       = 'datos-google-is';         // campaña × mes: qué se pierde y por qué
+// ── ESTACIONALIDAD (añadido 22-09-2026 · archivo aparte desde el 23-09-2026) ──
+// Va a UN ARCHIVO DISTINTO del reporte del cliente, por dos motivos:
+//   1. El reporte lo abre el CLIENTE. Miles de filas de términos ahí son ruido.
+//   2. Regenerar la hoja de reportes borra las pestañas que no son de la plantilla.
+// Deja SHEET_URL_ESTACIONAL vacío la primera vez: el script crea el archivo solo y
+// escribe su URL en el registro. Cópiala aquí y vuelve a guardar.
+var SHEET_URL_ESTACIONAL = '';                    // ← se rellena tras la primera pasada
+var PESTANA_TERMINOS = 'terminos-mes';            // término × mes: en qué mes busca la gente
+var PESTANA_IS       = 'is-mes';                  // campaña × mes: qué se pierde y por qué
 var MESES            = 24;   // ventana de estacionalidad. 24 deja comparar el mismo mes de 2 años
 var MIN_CLICS_TERMINO = 1;   // un término sin un solo clic en el mes no dice nada de demanda
 // ─────────────────────────────────────
@@ -63,14 +69,34 @@ function main() {
   try { volcarISPorMes();       } catch (e) { Logger.log('IS por mes FALLÓ: ' + e); }
 }
 
-/** Devuelve la pestaña, creándola con su cabecera si no existe. */
+/**
+ * Devuelve el libro de ESTACIONALIDAD, creándolo la primera vez.
+ * Nunca es el del reporte del cliente: son dos archivos distintos a propósito.
+ */
+function libroEstacional() {
+  if (SHEET_URL_ESTACIONAL) return SpreadsheetApp.openByUrl(SHEET_URL_ESTACIONAL);
+
+  var libro = SpreadsheetApp.create('Estacionalidad — ' + CLIENTE);
+  // La hoja vacía que trae por defecto estorba: se borra al crear la primera de verdad.
+  Logger.log('════════════════════════════════════════════════════════════');
+  Logger.log('CREADO el archivo de estacionalidad de ' + CLIENTE + '.');
+  Logger.log('Pega esta URL en SHEET_URL_ESTACIONAL y guarda el script:');
+  Logger.log(libro.getUrl());
+  Logger.log('Si no lo haces, la próxima pasada creará OTRO archivo nuevo.');
+  Logger.log('════════════════════════════════════════════════════════════');
+  return libro;
+}
+
+/** Devuelve la pestaña del libro de estacionalidad, creándola con su cabecera si no existe. */
 function hojaConCabecera(nombre, cabecera) {
-  var libro = SpreadsheetApp.openByUrl(SHEET_URL);
+  var libro = libroEstacional();
   var h = libro.getSheetByName(nombre);
   if (!h) {
     h = libro.insertSheet(nombre);
     h.getRange(1, 1, 1, cabecera.length).setValues([cabecera]).setFontWeight('bold');
     h.setFrozenRows(1);
+    var vacia = libro.getSheetByName('Hoja 1') || libro.getSheetByName('Sheet1');
+    if (vacia && libro.getSheets().length > 1) libro.deleteSheet(vacia);
   }
   return h;
 }

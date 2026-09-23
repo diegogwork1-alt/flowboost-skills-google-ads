@@ -19,8 +19,9 @@ es mirar que salgan las cosas.
 |---|---|---|
 | **El Ads Script** | Vive dentro de la cuenta de Google Ads del cliente. Cada mañana a las 6:00 escribe los datos en la hoja de Drive. | Se pega una vez y se olvida |
 | **`datos-google`** | La pestaña de siempre: día × campaña. Alimenta el reporte que ve el cliente. | **No se toca nunca** |
-| **`datos-google-terminos`** | NUEVA. Lo que la gente escribió de verdad en Google, mes a mes, 24 meses. | La crea el script sola |
-| **`datos-google-is`** | NUEVA. Cuánto se perdió cada mes y **por qué**: por falta de presupuesto o por ranking. | La crea el script sola |
+| **«Estacionalidad — \<Cliente\>»** | **ARCHIVO APARTE**, interno. No se comparte con el cliente. | Lo crea el script solo |
+| ↳ `terminos-mes` | Lo que la gente escribió de verdad en Google, mes a mes, 24 meses. | La crea el script sola |
+| ↳ `is-mes` | Cuánto se perdió cada mes y **por qué**: presupuesto o ranking. | La crea el script sola |
 | **La skill** | Lee esas dos pestañas y saca el calendario de presupuesto. | Tú, pidiéndoselo a Claude |
 
 ## La cadena de uso
@@ -101,16 +102,29 @@ Escritas 96 filas en datos-google-is
 **Si sale «FALLÓ»** en alguna de las dos últimas, no pasa nada grave: el reporte del cliente se ha
 escrito igual. Mira la tabla de abajo.
 
-## 4 · Comprobar la hoja
+## 4 · Guardar la URL del archivo nuevo ← IMPORTANTE
 
-Abre la hoja del cliente. Tienen que estar las dos pestañas nuevas:
+La primera pasada **crea un archivo aparte** en tu Drive, llamado «Estacionalidad — \<Cliente\>», y
+escribe su URL en el registro, entre líneas de `═`:
 
-- **`datos-google-terminos`** → una fila por término y mes. Mira la columna `mes`: tiene que haber
-  varios meses distintos, no solo el actual.
-- **`datos-google-is`** → una fila por campaña y mes, con `is_perdida_presupuesto` e
-  `is_perdida_ranking`.
+```
+════════════════════════════════════════
+CREADO el archivo de estacionalidad de <Cliente>.
+Pega esta URL en SHEET_URL_ESTACIONAL y guarda el script:
+https://docs.google.com/spreadsheets/d/XXXXXXXX/edit
+════════════════════════════════════════
+```
 
-En las dos, la columna `actualizado` tiene que tener la fecha de hoy.
+**Copia esa URL, pégala arriba del todo en `SHEET_URL_ESTACIONAL` y guarda el script.**
+Si no lo haces, cada pasada creará un archivo nuevo y acabarás con veinte.
+
+Ábrelo y comprueba las dos pestañas:
+- **`terminos-mes`** → una fila por término y mes. En la columna `mes` tiene que haber varios meses
+  distintos, no solo el actual.
+- **`is-mes`** → una fila por campaña y mes, con `is_perdida_presupuesto` e `is_perdida_ranking`.
+
+**Ese archivo es interno.** Contiene miles de términos de búsqueda: no se comparte con el cliente.
+El suyo, el de reportes, no cambia en nada.
 
 ## 5 · Programarlo (si el script era nuevo)
 
@@ -142,7 +156,7 @@ O directamente el cálculo, que es lo que hace Claude por dentro:
 
 ```bash
 python3 ~/.claude/skills/estacionalidad-google-ads/scripts/estacionalidad.py \
-  "<URL de la hoja del cliente>" \
+  "<URL del archivo de ESTACIONALIDAD>" \
   --marca "nombre del cliente,como lo escribe la gente"
 ```
 

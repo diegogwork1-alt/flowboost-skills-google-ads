@@ -26,14 +26,18 @@ dinero en los flojos.
 
 ## Lo que hace falta antes de empezar
 
-En la hoja del cliente (`Reporte Ads — <Cliente> — <año>`) tienen que existir dos pestañas:
+Un archivo **aparte del reporte del cliente**, llamado «Estacionalidad — <Cliente>», con dos pestañas:
 
 | Pestaña | Qué trae | Quién la escribe |
 |---|---|---|
-| `datos-google-terminos` | término de búsqueda × mes: impresiones, clics, coste, conversiones | el Ads Script, cada mañana |
-| `datos-google-is` | campaña × mes: cuota de impresiones y **por qué** se pierde | el Ads Script, cada mañana |
+| `terminos-mes` | término de búsqueda × mes: impresiones, clics, coste, conversiones | el Ads Script, cada mañana |
+| `is-mes` | campaña × mes: cuota de impresiones y **por qué** se pierde | el Ads Script, cada mañana |
 
-Se crean solas la primera vez que corre el script ampliado. Si no están:
+**Por qué en otro archivo y no en el del reporte**: el de reportes lo abre el cliente, y miles de
+filas de términos ahí son ruido; además, regenerar esa hoja borra las pestañas que no son de la
+plantilla. Este archivo es **interno**: no se comparte con el cliente.
+
+El Ads Script lo crea solo la primera vez y escribe su URL en el registro. Si no está:
 - Mira la columna `actualizado`: si tiene fecha de hoy, el script corrió bien.
 - Si la pestaña no existe, el script de esa cuenta todavía es el viejo. Hay que actualizarlo
   (está en `~/Desktop/SCRIPTS-GOOGLE-ADS/<cliente>.js`) y darle a *Previsualizar* en Google Ads.
@@ -176,5 +180,5 @@ Se guarda en `~/Desktop/CLIENTES/<Cliente>/Estacionalidad-Google-Ads-<AAAA-MM>.m
   Se dice y se deja fuera.
 - **Tomarse Google Trends como un volumen.** No lo es: es un índice relativo de 0 a 100 dentro de esa
   consulta concreta.
-- **Tocar `datos-google`.** Esa pestaña alimenta el reporte del cliente y tiene fórmulas enganchadas.
-  La estacionalidad vive en sus dos pestañas propias. No se mezclan.
+- **Meter esto en la hoja del cliente.** El reporte lo abre él; los términos de búsqueda son
+  material interno, y regenerar esa hoja se llevaría las pestañas por delante. Archivo aparte.
