@@ -9,7 +9,11 @@ Armás la investigación de keywords para campañas de **Búsqueda** de Google A
 
 > **Alcance honesto:** esto genera el **plan de keywords** (el .md). NO crea las campañas en Google Ads: el MCP de Google Ads es de **solo lectura**, así que armar campañas sigue siendo manual — Dirección carga el plan o se lo pasamos al cliente/gestor.
 >
-> Lo que sí cambió (21-09-2026): **los datos reales de la cuenta ya se pueden leer** con la skill `google-ads-mcp` (términos de búsqueda que llegan de verdad, keywords con Quality Score, negativas que ya existen). Si el cliente ya tiene cuenta activa, el plan se contrasta con esos datos en vez de salir solo del brief.
+> **Si el cliente YA tiene cuenta activa con histórico, no uses esta skill: usa `estacionalidad-google-ads`.**
+> Hace el mismo plan (grupos, concordancias, negativas) pero con los términos que convierten de verdad,
+> lo que quema dinero y la tendencia de Google Trends, y lo entrega junto con el análisis de mercado en
+> un solo documento (23-09-2026). Esta skill queda para clientes **sin cuenta todavía**, donde el
+> brief es la única fuente.
 
 ## Fuente
 - **El brief** (`0. Onboarding/Brief.md`): oferta, avatares, dolores, servicio, zona/país, competencia. De ahí sale todo.
