@@ -23,8 +23,10 @@ su hoja de reportes (`Reporte Ads — <Cliente> — <año>`, en su Drive).
 ```
 
 **Importante:** el archivo «Estacionalidad - \<Cliente\>» se crea en el Drive del Google que
-**autoriza** el script. Ese Google tiene que ser el mismo que usa rclone (`direccion@…`), o hay que
-compartirle el archivo después. Si no, la skill no podrá leerlo.
+**autoriza** el script. Ese Google tiene que ser el mismo con el que está configurado rclone en
+**tu** Mac (lo ves con `rclone config show gdrive`: el correo aparece en el token), o hay que
+compartirle el archivo después. Cada persona del equipo tiene su propio rclone: el archivo se
+comparte con el Google de quien vaya a pedir las keywords. Si no, la skill no podrá leerlo.
 
 ## 1 · Generar el script del cliente
 
@@ -53,7 +55,7 @@ Ponle nombre (por ejemplo «Datos + estacionalidad») y **Guardar**.
 ## 3 · Autorizar y previsualizar
 
 1. **Autorizar** (solo la primera vez): entra con el Google que tiene **permiso de edición** sobre la
-   hoja de reportes y que sea **el mismo de rclone**.
+   hoja de reportes y que sea **el mismo de tu rclone** (o compartes el archivo después, paso 5).
 2. **Vista previa** (según la versión pone «Previsualizar»). Tarda entre 30 segundos y 2 minutos.
 3. Cuando ponga «Hecho», pestaña **Registros**. En la primera pasada tiene que salir esto:
 
@@ -87,6 +89,9 @@ Abre la URL. Dos pestañas:
 - `is-mes`: una fila por campaña y mes, con `is_perdida_presupuesto` e `is_perdida_ranking`.
 En las dos, `actualizado` con la fecha de hoy.
 
+Si lo autorizó un Google distinto al de tu rclone, **compártelo ahora** (con ver basta) con el
+Google de rclone de cada persona que vaya a pedir las keywords de este cliente.
+
 **Este archivo es interno.** Miles de términos de búsqueda: no se comparte con el cliente. La hoja
 de reportes no cambia en nada.
 
@@ -110,7 +115,7 @@ keywords (paso 0 de `SKILL.md`). Tenla a mano.
 | Las pestañas nuevas están vacías | La cuenta es muy nueva o no tuvo clics | Normal; esperar |
 | Salen pocos meses | La cuenta es nueva | La skill entregará una hipótesis, no un patrón. Es lo correcto |
 | Se creó otro archivo nuevo | No se guardó la URL en `SHEET_URL_ESTACIONAL` | Paso 4 |
-| La skill dice que rclone no baja el archivo | El Google que autorizó no es el de rclone | Compartir el archivo con `direccion@…` (con ver basta) |
+| La skill dice que rclone no baja el archivo | El Google que autorizó no es el de rclone | Compartir el archivo con el Google de tu rclone (con ver basta) |
 
 ## Dos cosas que conviene saber
 

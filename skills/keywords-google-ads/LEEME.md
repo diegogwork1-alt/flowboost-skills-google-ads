@@ -18,7 +18,7 @@ solo documento en `6. Reportes` del Drive del cliente.
   Si la cuenta no lo tiene, `INSTALACION.md` (15 minutos).
 - **Al menos 24 meses completos** para hablar de estacionalidad. Con menos, la skill entrega una
   hipótesis y lo dice.
-- rclone configurado con el remoto `gdrive:` y el archivo compartido con ese Google.
+- rclone configurado en tu Mac con el remoto `gdrive:`, y el archivo «Estacionalidad - <Cliente>» compartido con ese Google (cada persona tiene su rclone; se comparte con quien lo vaya a usar).
 
 ## Ojo con esto
 
