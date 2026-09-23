@@ -1,6 +1,6 @@
 ---
 name: estacionalidad-google-ads
-description: Averigua en qué meses del año la gente busca de verdad lo que vende el cliente, y convierte eso en un calendario de presupuesto para Google Ads. Parte de los términos de búsqueda REALES de la cuenta mes a mes (archivo «Estacionalidad — <Cliente>», INTERNO y aparte del reporte del cliente, que escribe solo el Ads Script cada mañana), calcula el índice de estacionalidad por familia de términos separando SIEMPRE los de marca, lo cruza con la cuota de impresiones perdida por falta de presupuesto para encontrar los meses en los que se está dejando dinero sobre la mesa, y solo al final usa Google Trends para confirmar si un patrón es de verdad estacional o fue un año raro. Entrega un calendario de 12 meses con qué subir, cuándo y cuánto, más los términos que se adelantan o se retrasan respecto al resto. Usar cuando alguien diga "estacionalidad de <cliente>", "en qué meses invertimos más", "cuándo sube la demanda", "calendario de presupuesto", "por qué bajó/subió este mes", o pregunte si conviene adelantar campañas antes de temporada. NO usar para decidir si la cuenta escala en general (eso es google-ads-mcp) ni para planificar keywords nuevas desde el brief (eso es keywords-google-ads).
+description: Averigua en qué meses del año la gente busca de verdad lo que vende el cliente, y convierte eso en un calendario de presupuesto para Google Ads. Parte de los términos de búsqueda REALES de la cuenta mes a mes (archivo «Estacionalidad — <Cliente>», INTERNO y aparte del reporte del cliente, que escribe solo el Ads Script cada mañana), calcula el índice de estacionalidad por familia de términos separando SIEMPRE los de marca, lo cruza con la cuota de impresiones perdida por falta de presupuesto para encontrar los meses en los que se está dejando dinero sobre la mesa, y CRUZA el resultado con Google Trends (5 años del mercado español, automatizado en `scripts/trends.py`) para saber si la estacionalidad es real del mercado o la ha fabricado la propia gestión de la cuenta — son dos planes opuestos. Entrega un calendario de 12 meses con qué subir, cuándo y cuánto, más los términos que se adelantan o se retrasan respecto al resto. Usar cuando alguien diga "estacionalidad de <cliente>", "en qué meses invertimos más", "cuándo sube la demanda", "calendario de presupuesto", "por qué bajó/subió este mes", o pregunte si conviene adelantar campañas antes de temporada. NO usar para decidir si la cuenta escala en general (eso es google-ads-mcp) ni para planificar keywords nuevas desde el brief (eso es keywords-google-ads).
 ---
 
 # Estacionalidad de Google Ads: en qué meses hay que estar
@@ -123,15 +123,30 @@ El cruce que vale oro:
 Y el contrario: mes con índice bajo y IS perdida alta **por ranking** → no es un problema de
 temporada, es un problema de cuenta, y subir presupuesto no lo arregla.
 
-## Paso 4 · Google Trends, solo al final y solo para lo dudoso
+## Paso 4 · Google Trends: ¿el patrón es del mercado o lo he fabricado yo?
 
-Entra únicamente cuando: (a) hay menos de 2 años de datos, (b) un mes se dispara y no se sabe si fue
-real o una campaña puntual, o (c) se quiere entrar en términos que **nunca** se han pujado.
+**Este paso no es opcional.** Sin él no se sabe si la estacionalidad que muestran los datos viene de
+la demanda o de cómo se ha gestionado la cuenta — y son dos planes opuestos.
 
-Cómo hacerlo sin sacar conclusiones falsas está en `references/trends.md`. Resumen: **no se puede
-automatizar en bloque de forma fiable** y hay dos trampas serias (máximo 5 términos por consulta, y
-valores relativos que no son comparables entre consultas). Para 5-10 términos dudosos se hace a mano
-en 10 minutos y sale mejor.
+```bash
+python3 scripts/trends.py "<URL del archivo de estacionalidad>" --marca "cliente" --top 9
+```
+
+Coge solo los términos **que más convierten**, los consulta en lote con término ancla y devuelve el
+índice mensual de cada uno, en la misma escala. Sin navegador y sin API de pago; el detalle de cómo
+esquiva las dos trampas de Trends está en `references/trends.md`.
+
+**Cómo se cruza con el paso 2:**
+
+| La cuenta | Trends | Qué significa | Qué se hace |
+|---|---|---|---|
+| picos marcados | mismos picos | estacionalidad real del mercado | calendario de presupuesto |
+| picos marcados | **plano** | los picos los hizo la gestión | **arreglar la cuenta, no el calendario** |
+| plana | picos | se está perdiendo la temporada | entrar antes, ampliar términos |
+| plana | plana | no hay nada estacional que explotar | mirar otras palancas |
+
+En la prueba real del 23-09-2026 salió la **segunda fila**, y sin ese cruce el informe habría
+propuesto un calendario para un mercado que resultó ser plano.
 
 ## Paso 5 · El calendario
 

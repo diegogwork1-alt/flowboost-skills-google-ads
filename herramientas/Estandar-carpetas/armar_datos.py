@@ -59,9 +59,9 @@ def main(D, SAL, CLIENTE, MARCA=""):
             if raro and gasto > 0:
                 desc[raro][0] += 1; desc[raro][1] += gasto
             if gasto == 0 and not n: continue
-        if MARCA and MARCA.lower() not in str(r.get("name", "")).lower():
-            ajenas[r.get("name", "")] = ajenas.get(r.get("name", ""), 0) + gasto
-            continue
+            if MARCA and MARCA.lower() not in str(r.get("name", "")).lower():
+                ajenas[r.get("name", "")] = ajenas.get(r.get("name", ""), 0) + gasto
+                continue
             cid, fecha = r["id"], r["date_start"]; campanas[cid] = {"nombre": r["name"]}
             filas[(fecha, cid)] = [fecha, cid, round(gasto, 2), ent(r.get("impressions")),
                 ent(r.get("clicks")), ent(r.get("link_click")),

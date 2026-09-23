@@ -1,53 +1,69 @@
-# Google Trends: cómo usarlo sin sacar conclusiones falsas
+# Google Trends: qué añade, y cómo se consulta en lote
 
-Comprobado el 22-09-2026.
+Comprobado el 23-09-2026 contra una cuenta real.
 
-## Las dos trampas
+## Para qué sirve, exactamente
 
-**1. Máximo 5 términos por consulta, y los valores son RELATIVOS a esa consulta.**
-El 100 no significa «100.000 búsquedas»: significa «el punto más alto de estos términos, en este
-periodo, en esta zona». Dos consultas distintas **no se pueden comparar entre sí**. Si en una
-consulta «caldera» marca 80 y en otra «aire acondicionado» marca 80, eso **no** quiere decir que se
-busquen igual.
+La cuenta dice cuándo compra **quien ya llega**. Trends dice si ese patrón existe en **todo el
+mercado del país** y si **se repite años atrás** — hasta 5, frente a los meses que lleve la cuenta.
 
-**La solución es un término ancla**: se elige uno (el más estable y con volumen), se mete en **todas**
-las consultas, y después se reescala todo dividiendo por el valor del ancla en cada una. Sin ancla,
-comparar lotes es inventarse los datos.
+La pregunta que responde no es «¿en qué mes invierto?» (eso lo dice la cuenta), sino:
 
-**2. No hay forma fiable de automatizarlo en bloque.**
+> **¿La estacionalidad que veo es del mercado, o la he fabricado yo con cómo gestiono la cuenta?**
 
-| Vía | Estado hoy |
-|---|---|
-| **API oficial de Google Trends** | Existe desde julio de 2025, pero sigue en **alpha por solicitud**. Hay gente esperando respuesta meses. Cuando entra, resuelve el problema: da datos «consistentemente escalados» y 5 años de histórico. Merece la pena solicitarla. |
-| **`pytrends`** | **Archivado en abril de 2025**, sin mantenimiento. Se rompe con cada cambio interno de Google y devuelve `429 Too Many Requests` en cuanto se le pide volumen. No usar en nada que tenga que funcionar solo. |
-| **Forks** (`pytrends-modern`, `trendspyg`) | Vivos, pero siguen siendo scraping de un endpoint que Google no se compromete a mantener. |
-| **APIs de pago** (SerpApi, Glimpse y similares) | Funcionan y se pagan por consulta. Tienen sentido si esto se convierte en rutina para toda la cartera. |
+Es una diferencia que cambia el plan entero. Si el mercado es plano y la cuenta tiene picos, el
+calendario no arregla nada: lo que hay que mirar es la gestión.
 
-**Conclusión práctica**: para 5-10 términos dudosos, se hace **a mano** en `trends.google.com` en diez
-minutos y se acabó. Montar automatización frágil para eso es perder el tiempo, y peor: produce
-números que parecen datos.
+## Se automatiza — con dos cuidados
 
-## Cómo hacerlo a mano, bien
+`scripts/trends.py` lo hace solo:
 
-1. `trends.google.com` → escribe el término.
-2. **País: España** (o el del cliente). Sin esto estás mirando otro mercado.
-3. **Periodo: «Últimos 5 años»**. Es lo que responde la pregunta de verdad: ¿se repite todos los años?
-4. Añade hasta 4 términos más para comparar, **siempre con el mismo término ancla**.
-5. Mira **la forma**, no el número: ¿el pico cae siempre en el mismo mes? ¿es un pico o una meseta?
-6. Baja a «Consultas relacionadas → En aumento»: ahí salen términos nuevos que aún no están en la
-   cuenta, y a veces es lo más valioso de toda la visita.
+```bash
+python3 scripts/trends.py "<URL del archivo de estacionalidad>" --marca "cliente" --top 9
+```
 
-Lo que se apunta en el informe por cada término: **en qué mes pica, si se repite los 5 años, y si la
-tendencia general sube o baja**. Nada más. Los números de Trends no entran en el cálculo del índice:
-ese sale de los datos de la cuenta.
+Lee los términos **que más convierten** de la cuenta, los consulta en lote y devuelve el índice
+mensual de cada uno. Sin navegador, sin API de pago y sin `pytrends` (archivado en 2025).
 
-## La alternativa mejor, si algún día hace falta automatizar
+**Cuidado 1 — el máximo de 5 y los valores relativos.** Trends compara 5 términos por consulta y sus
+valores son relativos *a esa consulta*: dos lotes no son comparables entre sí. El script mete el
+mismo **término ancla** (el de más clics) en todos los lotes y reescala por él. La columna `vol` es
+el volumen de cada término respecto al ancla.
 
-**Keyword Planner de Google Ads**, método `GenerateKeywordHistoricalMetrics` de la API. Le pasas una
-lista de keywords de golpe, con país e idioma, y devuelve el **volumen de búsqueda mensual absoluto
-de los últimos 12 meses** por keyword. Sin límite de 5, sin valores relativos, sin scraping.
+**Cuidado 2 — el 429.** La API interna responde `429` a la primera. Se abre antes la portada de
+Trends: esa llamada también falla, pero deja la cookie `NID`, y con ella la API contesta. El script
+espera entre lotes; pedir deprisa vuelve a bloquear.
 
-Dos avisos:
-- Solo llega a **12 meses**. Para «¿qué pasó hace 3 años?» sigue haciendo falta Trends.
-- **El MCP de Google Ads no llega ahí**: ese solo hace consultas GAQL, y el Keyword Planner es otro
-  servicio. Haría falta la librería de Python de Google Ads con el mismo OAuth.
+## Leer el resultado sin engañarse
+
+- **Un término con `vol` por debajo de ~10 no es fiable.** Trends devuelve 0 en las semanas por
+  debajo de su umbral de publicación, y al promediar salen picos absurdos (631, 1150). Eso no es
+  demanda: es dividir por casi cero. El script los separa en su propia lista.
+- **Un 0 aislado en un mes con volumen alto** también es umbral, no ausencia de búsquedas.
+- **Los términos largos casi siempre salen vacíos.** Trends solo publica lo que tiene volumen; la
+  cola larga vive en la cuenta, no aquí.
+- Mira **la forma**, no el número: ¿el pico cae en el mismo mes todos los años?
+
+## Lo que salió en la prueba real (23-09-2026)
+
+Cuenta de servicios de adicciones, España, 9 términos, 5 años:
+
+| término | vol | forma |
+|---|---|---|
+| dejar de beber alcohol | 492 | **plana**: 79-119 todo el año |
+| como dejar el alcohol | 100 | variable, pero con poco volumen absoluto |
+| los otros 7 | 3-6 | sin volumen publicable |
+
+**El mercado no tiene estacionalidad.** Y esa misma cuenta mostraba en sus propios datos septiembre
+a 177 y marzo a 28. Conclusión: **esos picos no son del mercado, son de la cuenta** — de cuánto se
+invirtió cada mes y de cómo estaban las campañas. Sin Trends, el informe habría propuesto un
+calendario estacional para un mercado que es plano.
+
+Esa es exactamente la comprobación que justifica este paso.
+
+## Lo que no se puede hacer
+
+- **Keyword Planner** da volumen mensual absoluto de los últimos 12 meses y sería mejor fuente, pero
+  el MCP oficial de Google Ads solo hace consultas GAQL y no llega a ese servicio. Haría falta la
+  librería de Python de Google Ads con el mismo OAuth.
+- **La API oficial de Trends** existe desde julio de 2025, pero sigue en alpha por solicitud.
