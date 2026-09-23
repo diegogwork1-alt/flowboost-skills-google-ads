@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:'Helvetica Neue', Arial, sans-serif; color:#1a1a1a; font-size:12.6px; line-height:1.5; }
+  /* Las TABLAS pueden partirse entre páginas (las FILAS no): si no, saltan enteras y
+     dejan un cuarto de hoja en blanco. El árbol de carpetas y los recuadros sí van enteros. */
+  li, p, h2, h3, .aviso, .ok, tr, .tree, .cols { page-break-inside: avoid; }
+  thead { display: table-header-group; }
+  h2, h3 { page-break-after: avoid; }
+  .page { width:210mm; padding:0 0 10mm 0; }
+  .band { background:#0f0f0f; color:#fff; padding:24px 44px 20px 44px; }
+  .logo { height:30px; width:auto; display:block; margin-bottom:2px; }
+  .band .sub { font-size:10px; letter-spacing:3px; color:#b9b9b9; margin-top:5px; text-transform:uppercase; }
+  .band h1 { font-size:22px; margin:14px 0 5px 0; font-weight:700; }
+  .band p { margin:0; color:#d9d9d9; font-size:12.6px; max-width:640px; }
+  .content { padding:20px 44px 0 44px; }
+  h2 { font-size:15.5px; margin:20px 0 7px 0; padding-bottom:5px; border-bottom:2px solid #0f0f0f; }
+  h3 { font-size:13px; margin:14px 0 4px 0; }
+  ol,ul { margin:6px 0 9px 0; padding-left:20px; }
+  li { margin:3.5px 0; }
+  .mono { font-family:'Courier New',monospace; font-weight:700; background:#f2f2f2; padding:1px 5px; border-radius:3px; font-size:12px; }
+  .aviso { border-left:4px solid #b8860b; background:#fdf6e3; padding:10px 14px; margin:11px 0; }
+  .aviso b { color:#7a5a00; }
+  .ok { border-left:4px solid #1c7c3c; background:#f0f8f2; padding:10px 14px; margin:11px 0; }
+  .nota { color:#555; font-size:11.8px; }
+  .footer { padding:14px 44px; color:#666; font-size:11.5px; border-top:1px solid #ddd; margin-top:26px; }
+  .break { page-break-before: always; }
+  table { width:100%; border-collapse:collapse; margin:9px 0; font-size:11.8px; }
+  th { background:#0f0f0f; color:#fff; text-align:left; padding:7px 10px; font-size:11.5px; }
+  td { border-bottom:1px solid #e2e2e2; padding:7px 10px; vertical-align:top; }
+  td.a { color:#1c7c3c; font-weight:700; white-space:nowrap; }
+  .tree { font-family:'Courier New',monospace; font-size:10.9px; background:#f7f7f7; border:1px solid #e2e2e2; padding:10px 14px; line-height:1.36; white-space:pre; margin:7px 0; }
+  .chk { list-style:none; padding-left:0; }
+  .chk li { padding-left:20px; position:relative; margin:3.5px 0; }
+  .chk li:before { content:"\2610"; position:absolute; left:2px; font-size:13px; }
+  .cols { display:flex; gap:22px; }
+  .cols > div { flex:1; }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="band">
+    <img class="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlgAAABkCAYAAABaQU4jAAAAtGVYSWZJSSoACAAAAAYAEgEDAA<TOKEN_META>//8AAAKgBAABAAAAWAIAAAOgBAABAAAAZAAAAAAAAACIe9dkAAAACXBIWXMAAA7<TOKEN_META>+CjxyZGY6UkRGIHhtbG5zOnJkZj0naHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyc+CgogPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9JycKICB4bWxuczpBdHRyaWI9J2h0dHA6Ly9ucy5hdHRyaWJ1dGlvbi5jb20vYWRzLzEuMC8nPgogIDxBdHRyaWI6QWRzPgogICA8cmRmOlNlcT4KICAgIDxyZGY6bGkgcmRmOnBhcnNlVHlwZT0nUmVzb3VyY2UnPgogICAgIDxBdHRyaWI6Q3JlYXRlZD4yMDI2LTAyLTA2PC9BdHRyaWI6Q3JlYXRlZD4KICAgICA8QXR0cmliOkRhdGE+eyZxdW90O2RvYyZxdW90OzomcXVvdDtEQUhBa2RCYXg5RSZxdW90OywmcXVvdDt1c2VyJnF1b3Q7OiZxdW90O1VBRDF3MTlOeXA0JnF1b3Q7LCZxdW90O2JyYW5kJnF1b3Q7OiZxdW90O0VxdWlwbyBkZSBQYWJsbyBQZcOxYSZxdW90O308L0F0dHJpYjpEYXRhPgogICAgIDxBdHRyaWI6RXh0SWQ+YTNjZWZjZTctMmY4OC00MmZmLWEyNTktMWEzNzIwMWVkNmVlPC9BdHRyaWI6RXh0SWQ+CiAgICAgPEF0dHJpYjpGYklkPjUyNTI2NTkxNDE3OTU4MDwvQXR0cmliOkZiSWQ+CiAgICAgPEF0dHJpYjpUb3VjaFR5cGU+MjwvQXR0cmliOlRvdWNoVHlwZT4KICAgIDwvcmRmOmxpPgogICA8L3JkZjpTZXE+CiAgPC9BdHRyaWI6QWRzPgogPC9yZGY6RGVzY3JpcHRpb24+CgogPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9JycKICB4bWxuczpkYz0naHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8nPgogIDxkYzp0aXRsZT4KICAgPHJkZjpBbHQ+CiAgICA8cmRmOmxpIHhtbDpsYW5nPSd4LWRlZmF1bHQnPkxvZ29zIEZsb3dib29zdCBIb3Jpem9udGFsZXMgLSBGbG93Ym9vc3QgTG9nbyAtIEhvcml6b250YWwgQmxhbmNvPC9yZGY6bGk+CiAgIDwvcmRmOkFsdD4KICA8L2RjOnRpdGx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" alt="Flowboost">
+    <div class="sub">Marketing · Guía de grabación</div>
+    <h1>Cómo grabar tus vídeos</h1>
+    <p>Aquí tienes todo lo que necesitas para grabar los guiones con el móvil y que queden bien. No hace falta que seas experto ni que tengas equipo de vídeo, pero sí que lo cuides: <b>se nota mucho cuando un vídeo está trabajado</b>, y eso es justo lo que hace que funcione. <b>«Natural» va de cómo hablas y te expresas, no de despreocuparte de los detalles</b> — el encuadre, la luz, el sonido y la ropa importan, y son fáciles de cumplir. Te adjuntamos un vídeo de referencia para que veas el resultado al que queremos llegar. <b>Te pedimos una cosa: léela entera antes de ponerte a grabar.</b> Son cinco minutos y se ahorran la mayoría de las repeticiones. Solo son unos cuantos consejos para que no tengas que repetir la grabación.</p>
+  </div>
+
+  <div class="content">
+
+    <div class="ok">
+      <b>Tu parte es sencilla:</b> lees el guion, lo grabas <b>frase a frase</b> y subes las tomas buenas a tu carpeta de Google Drive. Del resto (montaje, música, imágenes de apoyo, textos) nos encargamos nosotros. <span class="nota">Te llevará entre 30 y 60 minutos.</span>
+    </div>
+
+    <h2>1 · Prepara el móvil</h2>
+    <p>Con el móvil se llega perfectamente al resultado que buscamos: la cámara no es el problema. Lo que marca la diferencia es cómo lo montes, y con estos ajustes ya ganas la mitad:</p>
+    <div class="cols">
+      <div>
+        <ul class="chk">
+          <li>Graba con la <b>cámara de atrás</b>, que da bastante más calidad que la frontal.</li>
+          <li><b>Trípode si tienes</b>: mantiene la imagen quieta y te deja usar la cámara de atrás. Vale cualquiera de móvil, son baratos. Si no tienes, apoya el móvil en algo estable a la altura de tus ojos.</li>
+          <li>Si no hay manera de apoyarlo, <b>tíralo en formato selfie</b>: es mejor un selfie bien hecho y firme que un plano tembloroso.</li>
+          <li><b>Limpia la lente</b> con un paño. Parece una tontería y es el fallo más común.</li>
+          <li>Ponlo en <b>modo avión</b> o No molestar, para que una llamada no te corte la toma.</li>
+        </ul>
+      </div>
+      <div>
+        <ul class="chk">
+          <li>Comprueba que te queda <b>espacio libre y batería</b>.</li>
+          <li><b>Fija el enfoque:</b> mantén el dedo pulsado sobre tu cara hasta que el móvil te avise de que lo ha bloqueado. Así la imagen no se desenfoca sola.</li>
+          <li><b>Sin filtros y sin zoom.</b> Si quieres salir más cerca, acerca el móvil.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Cómo colocar el móvil según lo que grabes</h3>
+    <table>
+      <tr><th style="width:26%">Material</th><th style="width:22%">Formato</th><th>Cómo</th></tr>
+      <tr><td><b>Anuncios</b></td><td><b>Vertical</b></td><td>Con el móvil <b>apoyado</b> (trípode, unos libros, lo que tengas). Así el encuadre no se mueve entre tomas y tienes las manos libres para gesticular.</td></tr>
+      <tr><td><b>VSL</b> (vídeo de ventas)</td><td><b>Horizontal</b></td><td>Con el móvil <b>apoyado</b> también. Aquí no queremos movimiento.</td></tr>
+    </table>
+
+    <div class="aviso">
+      <b>Una variante que nos viene muy bien:</b> graba la <b>primera frase</b> (el gancho) <b>también con el móvil en la mano</b>, acercándote un poco. Son veinte segundos más y ese movimiento hace que no parezca un anuncio, así probamos los dos arranques. Nómbrala <span class="mono">01_Gancho_mano.mp4</span>.
+    </div>
+
+    <h2>2 · Dónde te colocas</h2>
+    <ul>
+      <li>Pon la <b>cámara a la altura de tus ojos</b>. Ni desde arriba ni desde abajo.</li>
+      <li>Sal <b>de la mitad del pecho hacia arriba</b>, con un dedo de aire sobre la cabeza.</li>
+      <li><b>Mira a la lente</b>, no a tu propia imagen en la pantalla. Se nota mucho y cambia bastante.</li>
+      <li><b>Varía los planos entre tomas:</b> de medio cuerpo hacia arriba, de cuerpo entero, y alguna <b>andando mientras hablas</b>. Alternarlos da ritmo al montaje y evita que se haga monótono. Si solo puedes hacer uno, el de medio cuerpo.</li>
+      <li>Busca un <b>fondo ordenado y con algo de vida</b> (tu despacho, un salón), mejor que una pared blanca vacía. Como referencia, lo que siempre funciona: <b>luz cálida</b> y <b>algo de verde</b> —una planta, suman muchísimo y arreglan casi cualquier sitio. Un poco de <b>profundidad</b> también ayuda: no te pegues a la pared, deja espacio detrás.</li>
+      <li class="nota">Si dudas del sitio, <b>mándanos una foto antes de grabar</b> y te decimos. Es un minuto y nos ahorra repetir la grabación entera.</li>
+    </ul>
+    <div class="aviso">
+      <b>En los vídeos verticales:</b> Instagram y Facebook ponen sus botones encima de la parte de arriba y la de abajo. Si te sitúas <b>en el centro del encuadre</b>, no te taparán la cara.
+    </div>
+
+  </div>
+</div>
+
+<div class="page">
+  <div class="content" style="padding-top:26px">
+
+    <h2>3 · La luz</h2>
+    <ul>
+      <li><b>Ponte mirando a una ventana.</b> La luz tiene que darte en la cara, nunca en la espalda.</li>
+      <li><b>Mejores momentos:</b> primera hora de la mañana o última de la tarde. El sol del mediodía marca mucho las sombras.</li>
+      <li><b>Evita el contraluz</b> (la ventana detrás): saldrías como una silueta oscura y no tiene arreglo después.</li>
+      <li>No grabes solo con la lámpara del techo ni mezcles luz de bombilla con luz de ventana.</li>
+    </ul>
+
+    <h2>4 · El sonido</h2>
+    <p class="nota">Si la imagen sale un poco oscura, la gente lo perdona. Si no se te oye bien, se van enseguida. Es lo que más importa.</p>
+    <ul>
+      <li><b>Micrófono siempre que puedas.</b> Dos formas, las dos válidas: <b>de solapa</b> en el pecho, o <b>sujetándolo en la mano</b>. El de mano tiene una ventaja que no es obvia: al tener algo que sostener <b>te sueltas y gesticulas</b>, y delante de la cámara mucha gente se queda tiesa. Los hay buenos por poco dinero y se nota muchísimo.</li>
+      <li>Si no tienes micro, <b>acércate al móvil</b> y graba en una habitación con sofá, cortinas o alfombra: la tela se come el eco. Evita baños, pasillos y habitaciones vacías.</li>
+      <li><b>Apaga</b> el aire acondicionado o el ventilador, y ojo con la calle y la nevera.</li>
+      <li>Antes de empezar, <b>graba 5 segundos en silencio</b> sin moverte. Nos sirve para limpiar el ruido de fondo.</li>
+      <li><b>Escucha la primera toma con auriculares</b> antes de grabarlo todo. Medio minuto de comprobación te puede ahorrar repetirlo entero.</li>
+      <li>El sonido tiene que ir <b>dentro del vídeo</b>, no en un archivo aparte.</li>
+    </ul>
+
+    <h2>5 · La ropa</h2>
+    <ul>
+      <li><b>Colores lisos.</b> Las rayas finas y los cuadros pequeños vibran en vídeo y quedan mal.</li>
+      <li><b>Nada de blanco: ni camiseta ni camisa blanca</b>, y muchísimo menos sobre fondo claro. El blanco sobre blanco te funde con la pared y además complica los subtítulos, que van en blanco. <b>Cualquier otro color es mejor.</b></li>
+      <li>Mejor <b>sin logotipos de otras marcas</b> a la vista.</li>
+      <li><b>Dentro de CADA guion, la misma ropa y el mismo peinado de principio a fin.</b> Un guion se monta juntando tomas sueltas: si a mitad cambias de camisa o de sitio, esas tomas ya no encajan entre ellas y hay que repetirlas.</li>
+      <li><b>Entre un guion y otro, cambiar SUMA (solo en los anuncios cortos).</b> Cada guion es un anuncio distinto y se publican a la vez: si en los cinco sales igual, en el feed parecen el mismo anuncio repetido. Cambiar de <b>camisa y de fondo</b> entre guiones se nota y da variedad — no es obligatorio, pero ayuda. Eso sí: <b>termina un guion entero antes de cambiarte</b>.</li>
+      <li><b>En el VSL, no:</b> es un único vídeo largo, así que la misma ropa y el mismo fondo de principio a fin, aunque lo grabes en varios días.</li>
+      <li>Si tienes que partirlo en varios días, hazte una foto del sitio y de la ropa para repetirlo igual.</li>
+    </ul>
+
+    <h2>6 · Cómo grabar el guion: frase a frase</h2>
+    <p>Te pasaremos los guiones ya escritos. <b>No hace falta que te los aprendas de memoria</b>, y mejor sin teleprompter: se nota en la mirada y suena robótico. Hazlo así:</p>
+    <ol>
+      <li>Lee <b>una sola frase</b> y quédate con la idea.</li>
+      <li>Dale a grabar. <b>Espera un segundo en silencio</b>, di la frase mirando a la lente, y <b>espera otro segundo</b> antes de parar. <span class="nota">Esos silencios nos dejan margen para cortar limpio en el montaje.</span></li>
+      <li>Si no sale a la primera, <b>una o dos más como mucho</b>. <b>Cuanto más repites una frase, más naturalidad pierdes.</b> Si se te atraganta, déjala: sigue con el resto del guion y vuelve al final a esa toma, con la cabeza despejada.</li>
+      <li>Pasa a la siguiente y haz lo mismo.</li>
+    </ol>
+    <div class="aviso">
+      <b>Los tres primeros segundos son lo que más importa.</b> Empieza hablando desde el principio, con energía y mirando a cámara. <b>Sin saludos</b> del tipo «hola, qué tal»: en un anuncio, saludar hace que la gente pase de largo. Merece la pena dedicarle un par de tomas más que al resto y quedarte con la mejor — pero sin machacarla: si a la tercera no sale, sigue y vuelve a ella al final.
+    </div>
+    <ul>
+      <li><b>Sube un poco la energía</b> respecto a como hablas normalmente: la cámara la baja, y lo que a ti te parece algo más de lo normal, al verlo queda justo. <b>Pero energía no es actuar:</b> no impostes la voz ni fuerces los gestos. Habla como cuando le cuentas a un cliente que tienes delante algo que de verdad te importa. Si al escucharte suenas a personaje, te has pasado — y eso sí se nota.</li>
+      <li>Si te equivocas a mitad de frase, para, respira y <b>repite la frase entera</b>. Es más fácil que retomarla por la mitad.</li>
+      <li>Puedes <b>cambiar alguna palabra</b> para que te suene más tuyo. Solo te pedimos que mantengas el orden y la idea de cada frase, porque el guion está pensado para vender.</li>
+    </ul>
+
+    <div class="ok">
+      <b>No te preocupes por la perfección.</b> Buscamos que se te vea natural y cercano, no un anuncio de televisión. Si una toma te suena bien aunque no sea perfecta, nos vale.
+    </div>
+
+  </div>
+</div>
+
+<div class="page">
+  <div class="band" style="padding:20px 44px 16px 44px">
+    <div class="sub">La parte que más nos ayuda</div>
+    <h1 style="font-size:19px">7 · Cómo subirnos los vídeos</h1>
+    <p>Cuando el material llega ordenado, podemos montar los anuncios en horas. Cuando llega suelto, se nos va bastante tiempo en ordenarlo y tu campaña se retrasa. Con estos tres minutos de orden nos ayudas muchísimo.</p>
+  </div>
+  <div class="content">
+
+    <p>Entra en la <b>carpeta de Google Drive que te hemos compartido</b>. <b>Ya te la hemos dejado montada</b>: dentro de <span class="mono">Ads</span> verás <span class="mono">Vídeos crudos</span> y, dentro, <b>una carpeta por cada guion</b>. No tienes que crear nada, solo subir cada vídeo a la carpeta que le toca.</p>
+    <p class="nota">Mejor no mandarlos por WhatsApp: los comprime y llegan con una calidad que ya no sirve para publicar.</p>
+
+    <h3>Lo que vas a encontrar</h3>
+    <div class="tree">&#128193; [Tu carpeta compartida]
+&#9492;&#9472;&#9472; &#128193; Ads
+    &#9492;&#9472;&#9472; &#128193; V&#237;deos crudos
+        &#9500;&#9472;&#9472; &#128193; Script 1     &#8592; aqu&#237; los v&#237;deos del guion 1
+        &#9474;   &#9500;&#9472;&#9472; 01_Gancho.mp4
+        &#9474;   &#9500;&#9472;&#9472; 01_Gancho_mano.mp4
+        &#9474;   &#9500;&#9472;&#9472; 02_Problema.mp4
+        &#9474;   &#9500;&#9472;&#9472; 03_Demostracion.mp4
+        &#9474;   &#9500;&#9472;&#9472; 04_Propuesta.mp4
+        &#9474;   &#9500;&#9472;&#9472; 05_Prueba.mp4
+        &#9474;   &#9492;&#9472;&#9472; 06_Oferta.mp4
+        &#9500;&#9472;&#9472; &#128193; Script 2     &#8592; los del guion 2
+        &#9474;   &#9492;&#9472;&#9472; ...
+        &#9492;&#9472;&#9472; &#128193; VSL          &#8592; el v&#237;deo de ventas</div>
+
+    <h3>Cómo nombrar cada vídeo</h3>
+    <p>Número de orden + nombre del bloque, <b>tal como viene escrito en el guion</b>: <span class="mono">01_Gancho</span>, <span class="mono">02_Problema</span>, <span class="mono">03_Demostracion</span>, <span class="mono">04_Propuesta</span>, <span class="mono">05_Prueba</span>, <span class="mono">06_Oferta</span>. Cada guion trae los nombres ya puestos; solo tienes que copiarlos.</p>
+    <p class="nota">El guion trae <b>tres ganchos</b> (01_Gancho, 01_Gancho_B y 01_Gancho_C): graba los tres, son la misma frase dicha de tres formas y nos sirven para probar cuál funciona. Si de una frase quieres dejarnos dos tomas buenas, añade <span class="mono">_2</span> a la segunda. Y si es la versión del gancho con el móvil en la mano, acábala en <span class="mono">_mano</span>.</p>
+    <div class="aviso">
+      <b>Sin tildes, sin eñes y sin espacios</b> en el nombre de los vídeos: usa guiones bajos. Mejor <span class="mono">03_Demostracion.mp4</span> que <span class="mono">3 demostración (buena).mp4</span>. Así el que monta el anuncio abre la carpeta y ya los tiene en el orden correcto, sin tener que adivinar nada.
+    </div>
+
+    <h3>Tres cosas que nos ayudan mucho</h3>
+    <ol>
+      <li><b>Cada vídeo, en la carpeta de su guion.</b> Ya están creadas: solo tienes que soltarlos dentro.</li>
+      <li><b>Sube solo las tomas buenas</b>, ya recortadas y nombradas. Las que no valen puedes borrarlas antes.</li>
+      <li><b>Todo en el Drive.</b> Si nos llega repartido entre WhatsApp, email y algún enlace suelto, se nos pierden cosas por el camino.</li>
+    </ol>
+
+  </div>
+</div>
+
+<div class="page">
+  <div class="content" style="padding-top:26px">
+
+    <h2>8 · Lo que nos hace repetir la grabación</h2>
+    <p class="nota">No es para asustarte: es simplemente lo que hemos visto que más veces obliga a volver a grabar. Si evitas esto, seguro que sale a la primera.</p>
+    <table>
+      <tr><th style="width:9%">&nbsp;</th><th style="width:45%">Así nos sirve</th><th>Así toca repetir</th></tr>
+      <tr><td class="a">Orden</td><td>Cada vídeo en la carpeta de su guion y con su nombre</td><td>Todo junto en una carpeta y sin nombrar</td></tr>
+      <tr><td class="a">Nombres</td><td>Numerados por orden, sin tildes ni espacios</td><td>Los que pone el móvil: <span class="mono">IMG_4821.MOV</span></td></tr>
+      <tr><td class="a">Envío</td><td>Todo junto en la carpeta de Drive</td><td>Repartido entre WhatsApp, email y enlaces</td></tr>
+      <tr><td class="a">Tomas</td><td>Recortes cortos con las tomas buenas</td><td>Un vídeo larguísimo con todas las tomas falsas</td></tr>
+      <tr><td class="a">Sonido</td><td>Dentro del vídeo y sin eco</td><td>En un archivo aparte, o con eco</td></tr>
+      <tr><td class="a">Imagen</td><td>Con luz, enfocado y en el formato correcto</td><td>A contraluz, muy oscuro o en el formato contrario</td></tr>
+      <tr><td class="a">Archivo</td><td>El vídeo original del móvil</td><td>Ya editado, con filtros, música o marca de agua</td></tr>
+    </table>
+
+    <h2>9 · Repaso antes de avisarnos</h2>
+    <div class="cols">
+      <div>
+        <h3>De la grabación</h3>
+        <ul class="chk">
+          <li>He grabado todas las frases de todos los guiones.</li>
+          <li>De cada frase tengo al menos una toma buena.</li>
+          <li>La primera frase la he repetido varias veces y he dejado la mejor.</li>
+          <li>He escuchado una toma con auriculares y se oye bien.</li>
+          <li>He borrado las tomas que no valen.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>De la subida</h3>
+        <ul class="chk">
+          <li>Está todo en la carpeta de Drive compartida.</li>
+          <li>He puesto cada vídeo en la carpeta de su guion.</li>
+          <li>Los vídeos van numerados por orden: <span class="mono">01_Gancho</span>, <span class="mono">02_...</span></li>
+          <li>No hay tildes, eñes ni espacios en los nombres.</li>
+          <li>No he mandado nada por WhatsApp ni por email.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="page-break-inside:avoid">
+    <h2>10 · Qué pasa después</h2>
+    <ol>
+      <li><b>Avísanos</b> cuando lo hayas subido todo. No empezamos hasta que nos confirmas que está completo.</li>
+      <li><b>Revisamos el material</b> y te decimos si está todo bien o si hay que repetir alguna toma.</li>
+      <li><b>Montamos los anuncios</b>: nos encargamos del montaje, los textos, la música y las imágenes de apoyo.</li>
+      <li><b>Te los enseñamos</b> para que les des el visto bueno antes de publicar nada.</li>
+      <li><b>Lanzamos las campañas.</b></li>
+    </ol>
+    </div>
+
+    <div class="ok">
+      Si tienes cualquier duda antes de ponerte a grabar, escríbenos y lo vemos juntos. Es mejor resolverlo en dos minutos que después de haber grabado.
+    </div>
+
+  </div>
+  <div class="footer">
+    Flowboost Marketing · Guía de grabación · Si algo de esta guía no encaja con tu caso, dínoslo antes de grabar y lo adaptamos.
+  </div>
+</div>
+
+</body>
+</html>

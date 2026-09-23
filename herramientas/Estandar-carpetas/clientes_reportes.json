@@ -1,0 +1,60 @@
+{
+  "_leeme": "LA lista de clientes de la rutina diaria de reportes. La leen actualizar_todos.py y la tarea programada, así que hay UNA sola lista y no dos que se separen. Se da de alta con: actualizar_todos.py --alta \"<Cliente>\" <ad_account_id> <sheet_id> [indicador_leads] · `marca_campanas`: si la cuenta del cliente tiene campañas que NO gestionamos, aquí va un trozo del nombre de las nuestras; solo esas entran en el reporte.",
+  "clientes": [
+    {
+      "cliente": "Cliente 14",
+      "ad_account_id": "<ID_META>",
+      "sheet_id": "<ID_DRIVE>",
+      "indicador_leads": "offsite_conversion.fb_pixel_custom.TypeformSubmit",
+      "activo": true
+    },
+    {
+      "cliente": "Cliente 02",
+      "ad_account_id": "<ID_META>",
+      "sheet_id": "<ID_DRIVE>",
+      "indicador_leads": "",
+      "activo": true
+    },
+    {
+      "cliente": "Cliente 11",
+      "ad_account_id": "<ID_META>",
+      "sheet_id": "<ID_DRIVE>",
+      "indicador_leads": "",
+      "activo": true
+    },
+    {
+      "cliente": "Cliente 13",
+      "ad_account_id": "<ID_META>",
+      "sheet_id": "<ID_DRIVE>",
+      "indicador_leads": "",
+      "activo": true
+    },
+    {
+      "cliente": "Cliente 03",
+      "ad_account_id": "<ID_META>",
+      "sheet_id": "<ID_DRIVE>",
+      "indicador_leads": "",
+      "activo": true
+    },
+    {
+      "cliente": "Cliente 05",
+      "ad_account_id": "<ID_META>",
+      "sheet_id": "<ID_DRIVE>",
+      "indicador_leads": "",
+      "activo": true,
+      "_nota": "en su cuenta hay publicaciones de Instagram que promociona el cliente por su cuenta y NO gestionamos: metían 166 € de gasto ajeno en el reporte. `marca_campanas` deja pasar solo las campañas cuyo nombre la contenga (Dirección, 22-09-2026).",
+      "marca_campanas": "Cliente 05::"
+    },
+    {
+      "cliente": "Cliente 01",
+      "ad_account_id": "<ID_META>",
+      "sheet_id": "<ID_DRIVE>",
+      "indicador_leads": "",
+      "activo": false,
+      "_nota": "cuenta <ID_META>, activa en Meta, pero `is_ads_mcp_enabled: false` — «Ads MCP is gradually being rolled out». En cuanto Meta la habilite, poner activo: true y entra sola."
+    }
+  ],
+  "_bajas": {
+    "Cliente 06": "cliente que se fue (Dirección, 22-09-2026). Fuera de los reportes. Su hoja se queda en Drive, no se borra."
+  }
+}
