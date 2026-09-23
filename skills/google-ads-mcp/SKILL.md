@@ -1,6 +1,6 @@
 ---
 name: google-ads-mcp
-description: Audita cuentas de Google Ads leyendo datos reales por MCP y cruzándolos con GA4 y Search Console. Saca las cuatro métricas que la interfaz no da - CPA marginal por tramo de presupuesto, cuota de impresiones perdida traducida a dinero y separada por presupuesto vs ranking, curva de maduración de conversiones y coste real del clic incremental - y cierra con un veredicto de una línea (escalar, arreglar antes de escalar, mantener o apagar) más acciones ordenadas por dinero al mes. Incluye el recetario GAQL y el barrido de cartera por MCC. SOLO LECTURA - los tres MCP leen, ninguno escribe; la skill entrega el plan y aplicarlo lo decide Dirección. Trae también el montaje de la conexión (proyecto de Google Cloud, OAuth, nivel de acceso de la API y los tres `claude mcp add`) en references/instalacion.md. Es el PASO SIGUIENTE a `reportes-cliente`: aquel da la contabilidad diaria en la hoja del cliente, esta la interpreta. Puede correr por MCP o, si la conexión no está montada, leyendo la pestaña `datos-google` de esa misma hoja. Usar cuando Dirección diga "audita la cuenta de Google Ads de <cliente>", "cómo va Google en <cliente>", "monta el MCP de Google Ads/GA4/Search Console", o pida cruzar Google Ads con Analytics o con Search Console. NO usar para Meta (eso es gestion-cuenta-meta) ni para planificar keywords desde el brief (eso es keywords-google-ads).
+description: Audita cuentas de Google Ads leyendo datos reales por MCP y cruzándolos con GA4 y Search Console. Saca las cuatro métricas que la interfaz no da - CPA marginal por tramo de presupuesto, cuota de impresiones perdida traducida a dinero y separada por presupuesto vs ranking, curva de maduración de conversiones y coste real del clic incremental - y cierra con un veredicto de una línea (escalar, arreglar antes de escalar, mantener o apagar) más acciones ordenadas por dinero al mes. Incluye el recetario GAQL y el barrido de cartera por MCC. SOLO LECTURA - los tres MCP leen, ninguno escribe; la skill entrega el plan y aplicarlo lo decide Dirección. Trae también el montaje de la conexión (proyecto de Google Cloud, OAuth, nivel de acceso de la API y los tres `claude mcp add`) en references/instalacion.md. Es el PASO SIGUIENTE a `reportes-cliente`: aquel da la contabilidad diaria en la hoja del cliente, esta la interpreta. Puede correr por MCP o, si la conexión no está montada, leyendo la pestaña `datos-google` de esa misma hoja. Usar cuando Dirección diga "audita la cuenta de Google Ads de <cliente>", "cómo va Google en <cliente>", "monta el MCP de Google Ads/GA4/Search Console", o pida cruzar Google Ads con Analytics o con Search Console. NO usar para Meta (eso es gestion-cuenta-meta) ni para keywords, negativas o estacionalidad (eso es keywords-google-ads).
 ---
 
 # Google Ads + GA4 + Search Console por MCP
@@ -50,12 +50,11 @@ fecha · campaña · coste · impresiones · clics · CTR · CPC medio · conver
 salen el **CPA marginal**, el **coste del clic incremental** y la foto del periodo, con 200+ filas
 de histórico real por cliente.
 
-**Lo que le falta**: el desglose de la IS por causa. El Ads Script trae
-`metrics.search_impression_share` pero no `search_budget_lost_impression_share` ni
-`search_rank_lost_impression_share`, así que por la vía hoja **no se puede separar la pérdida
-comprable de la que no lo es** y la sección 3 sale a medias. Se arregla añadiendo esos dos campos a
-la consulta de `~/Desktop/SCRIPTS-GOOGLE-ADS/<cliente>.js` y dos columnas a la hoja (tocando las
-**tres** listas, como avisa `reportes-cliente`).
+**El desglose de la IS por causa** (`search_budget_lost_impression_share` y
+`search_rank_lost_impression_share`) no va en `datos-google`: lo escribe el mismo Ads Script, por
+campaña y mes, en la pestaña `is-mes` del archivo interno «Estacionalidad - <Cliente>» (skill
+`keywords-google-ads`, `INSTALACION.md`). Si ese archivo no existe, la cuenta no tiene el script
+ampliado y la sección 3 sale a medias hasta que se monte.
 
 **El CPA máximo rentable y el valor por lead no se preguntan: se leen de la hoja.**
 Pestaña `Reporte Google`, columnas **«Cierres (a mano)»** y **«Facturado (a mano)»** — el ticket
@@ -134,7 +133,7 @@ escalar, mantener o apagar— y las diez secciones son la prueba de esa línea, 
 acciones ordenadas por dinero al mes, cada una con su `n` y su nivel de confianza: una recomendación
 sacada de 4 conversiones y otra de 400 no pueden parecer iguales.
 **Se entrega como Google Doc** en la carpeta `6. Reportes` del Drive del cliente, nunca como `.md`
-(ver el mismo apartado en `estacionalidad-google-ads`). El `.md` es material de trabajo, no el entregable.
+(ver el mismo apartado en `keywords-google-ads`). El `.md` es material de trabajo, no el entregable.
 
 ### Paso 5 · Aplicar
 No se aplica desde aquí. Cuando Dirección decida ejecutar:

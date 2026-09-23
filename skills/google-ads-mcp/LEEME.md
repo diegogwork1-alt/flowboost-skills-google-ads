@@ -7,7 +7,7 @@
 
 Audita cuentas de Google Ads leyendo datos reales por MCP y cruzándolos con GA4 y Search Console. Saca las cuatro métricas que la interfaz no da - CPA marginal por tramo de presupuesto, cuota de impresiones perdida traducida a dinero y separada por presupuesto vs ranking, curva de maduración de conversiones y coste real del clic incremental - y cierra con un veredicto de una línea (escalar, arreglar antes de escalar, mantener o apagar) más acciones ordenadas por dinero al mes.
 
-**Qué NO hace:** NO usar para Meta (eso es gestion-cuenta-meta) ni para planificar keywords desde el brief (eso es keywords-google-ads).
+**Qué NO hace:** NO usar para Meta (eso es gestion-cuenta-meta) ni para keywords, negativas o estacionalidad (eso es keywords-google-ads).
 
 ## Antes de empezar necesitás
 

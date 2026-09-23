@@ -14,8 +14,9 @@
  * hay credencial externa que caduque, no consume cuota de API y no depende del VPS.
  *
  * INSTALACIÓN (una vez por cuenta):
- *   1. Google Ads → Herramientas → Acciones masivas → Scripts → «+»
- *   2. Pegar esto. Cambiar SHEET_URL y CLIENTE de abajo.
+ *   1. Google Ads → Herramientas → Acciones en bloque → Secuencias de comandos → «+»
+ *      (en inglés: Tools → Bulk actions → Scripts)
+ *   2. Pegar el script que genera generar_script_cliente.py (ya lleva SHEET_URL y CLIENTE).
  *   3. «Autorizar» y luego «Previsualizar» para comprobar que escribe.
  *   4. Programar: Frecuencia diaria, a las 06:00.
  *      (No antes: las cifras de Google se consolidan hasta 3 h después de medianoche.)
@@ -49,7 +50,7 @@ var MIN_CLICS_TERMINO = 1;   // un término sin un solo clic en el mes no dice n
 function main() {
   var hoja = SpreadsheetApp.openByUrl(SHEET_URL).getSheetByName(PESTANA);
   if (!hoja) throw new Error('No existe la pestaña "' + PESTANA + '". ' +
-                             'Créala con anadir_hoja_google.py antes de programar esto.');
+                             'Créala con anadir_hoja_google.py (Estandar-carpetas, skill reportes-cliente) antes de programar esto.');
 
   var hasta = new Date();
   var desde = new Date(hasta.getTime() - DIAS * 24 * 60 * 60 * 1000);
@@ -102,6 +103,10 @@ function hojaConCabecera(nombre, cabecera) {
     h = libro.insertSheet(nombre);
     h.getRange(1, 1, 1, cabecera.length).setValues([cabecera]).setFontWeight('bold');
     h.setFrozenRows(1);
+    // Solo las columnas que hacen falta: el archivo tiene un techo de 10 millones de celdas
+    // compartido por todas las pestañas, y las 26 columnas por defecto lo gastan sin motivo.
+    var sobran = h.getMaxColumns() - cabecera.length;
+    if (sobran > 0) h.deleteColumns(cabecera.length + 1, sobran);
     var vacia = libro.getSheetByName('Hoja 1') || libro.getSheetByName('Sheet1');
     if (vacia && libro.getSheets().length > 1) libro.deleteSheet(vacia);
   }
@@ -130,7 +135,7 @@ function volcarTerminosPorMes() {
   var desde = fmt(restarMeses(new Date(), MESES));
   var hasta = fmt(new Date());
 
-  var q = 'SELECT segments.month, search_term_view.search_term, campaign.name, ' +
+  var q = 'SELECT segments.month, search_term_view.search_term, campaign.name, ad_group.name, ' +
           'metrics.impressions, metrics.clicks, metrics.cost_micros, metrics.conversions ' +
           'FROM search_term_view ' +
           'WHERE segments.date BETWEEN "' + desde + '" AND "' + hasta + '" ' +
@@ -142,9 +147,10 @@ function volcarTerminosPorMes() {
     var mes  = r.segments.month;                  // primer día del mes, YYYY-MM-DD
     var term = r.searchTermView.searchTerm;
     var camp = r.campaign.name;
+    var grupo = (r.adGroup && r.adGroup.name) || '';
     var m    = r.metrics;
     filas.push([
-      CLIENTE + '|' + mes + '|' + term + '|' + camp,
+      CLIENTE + '|' + mes + '|' + term + '|' + camp + '|' + grupo,
       mes,
       CLIENTE,
       term,
@@ -258,13 +264,14 @@ function fmt(d) {
 
 /* ───────────────────────────────────────────────────────────────────────────
    VERSIÓN MCC — una sola instalación para todos los clientes.
-   Sustituye main() por esto y rellena CUENTAS con el id de cada cuenta y su hoja.
+   Sustituye main() por esto, renombra el main() de arriba a main_una() y rellena CUENTAS.
+   Cada cliente lleva su hoja de reportes (url) Y su archivo de estacionalidad (urlEstacional):
+   si se deja vacío, se crea en la primera pasada y hay que copiar la URL del registro.
 
 function main() {
   var CUENTAS = [
-    {id: '000-000-0000', cliente: 'Cliente 01',      url: 'URL_HOJA_Cliente 01'},
-    {id: '000-000-0000', cliente: 'Cliente 13', url: 'URL_HOJA_Cliente 13'},
-    {id: '000-000-0000', cliente: 'MMS',         url: 'URL_HOJA_MMS'}
+    {id: '000-000-0000', cliente: 'Cliente A', url: 'URL_HOJA_A', urlEstacional: ''},
+    {id: '000-000-0000', cliente: 'Cliente B', url: 'URL_HOJA_B', urlEstacional: ''}
   ];
   for (var i = 0; i < CUENTAS.length; i++) {
     var c = CUENTAS[i];
@@ -272,8 +279,9 @@ function main() {
     if (!it.hasNext()) { Logger.log('No encuentro la cuenta ' + c.id); continue; }
     MccApp.select(it.next());
     SHEET_URL = c.url; CLIENTE = c.cliente;
+    SHEET_URL_ESTACIONAL = c.urlEstacional || '';
+    _libroCache = null;   // si no, todos los clientes escribirían en el archivo del primero
     try { main_una(); } catch (e) { Logger.log(c.cliente + ' FALLÓ: ' + e); }
   }
 }
-   (y renombra el main() de arriba a main_una)
    ─────────────────────────────────────────────────────────────────────────── */
