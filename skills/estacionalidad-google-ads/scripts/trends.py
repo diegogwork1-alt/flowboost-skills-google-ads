@@ -21,7 +21,7 @@ import argparse, http.cookiejar, json, sys, time, urllib.parse, urllib.request
 from collections import defaultdict
 
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+      "(KHTML, like Gecko) Chrome/140 Safari/537")
 MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
 
 
