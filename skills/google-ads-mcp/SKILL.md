@@ -133,7 +133,8 @@ Formato en `references/analisis.md`. Abre con el **veredicto en una línea** —
 escalar, mantener o apagar— y las diez secciones son la prueba de esa línea, no su sustituto. Cierra con
 acciones ordenadas por dinero al mes, cada una con su `n` y su nivel de confianza: una recomendación
 sacada de 4 conversiones y otra de 400 no pueden parecer iguales.
-Se guarda en `~/Desktop/CLIENTES/<Cliente>/Auditoria-Google-Ads-<AAAA-MM>.md`.
+**Se entrega como Google Doc** en la carpeta `6. Reportes` del Drive del cliente, nunca como `.md`
+(ver el mismo apartado en `estacionalidad-google-ads`). El `.md` es material de trabajo, no el entregable.
 
 ### Paso 5 · Aplicar
 No se aplica desde aquí. Cuando Dirección decida ejecutar:

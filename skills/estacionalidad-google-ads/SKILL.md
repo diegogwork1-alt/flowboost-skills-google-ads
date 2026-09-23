@@ -162,7 +162,15 @@ y los 7 días siguientes a tocar el presupuesto no cuentan.
 ## Lo que no se puede decir con estos datos
 ```
 
-Se guarda en `~/Desktop/CLIENTES/<Cliente>/Estacionalidad-Google-Ads-<AAAA-MM>.md`.
+### Dónde se entrega — NUNCA en `.md`
+El informe va como **Google Doc** en el Drive del cliente, en su carpeta **`6. Reportes`**
+(`i_<Cliente>/c_<Cliente>/6. Reportes/`). Un `.md` en el Mac no lo abre nadie, no se comenta y no se
+comparte: no cuenta como entregado.
+
+Cómo: generar el `.docx` con `python-docx` y subirlo con rclone a esa carpeta. **rclone NO convierte a
+Google Doc** aunque se le pase `--drive-import-formats docx`: sube el fichero tal cual. La conversión
+final se hace en Drive (botón derecho → Abrir con → Documentos de Google → Archivo → Guardar como
+Documento de Google) y **se avisa de ese paso al entregar**.
 
 ---
 
