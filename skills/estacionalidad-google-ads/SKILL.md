@@ -1,207 +1,195 @@
 ---
 name: estacionalidad-google-ads
-description: Averigua en qué meses del año la gente busca de verdad lo que vende el cliente, y convierte eso en un calendario de presupuesto para Google Ads. Parte de los términos de búsqueda REALES de la cuenta mes a mes (archivo «Estacionalidad — <Cliente>», INTERNO y aparte del reporte del cliente, que escribe solo el Ads Script cada mañana), calcula el índice de estacionalidad por familia de términos separando SIEMPRE los de marca, lo cruza con la cuota de impresiones perdida por falta de presupuesto para encontrar los meses en los que se está dejando dinero sobre la mesa, y CRUZA el resultado con Google Trends (5 años del mercado español, automatizado en `scripts/trends.py`) para saber si la estacionalidad es real del mercado o la ha fabricado la propia gestión de la cuenta — son dos planes opuestos. Entrega un calendario de 12 meses con qué subir, cuándo y cuánto, más los términos que se adelantan o se retrasan respecto al resto. Usar cuando alguien diga "estacionalidad de <cliente>", "en qué meses invertimos más", "cuándo sube la demanda", "calendario de presupuesto", "por qué bajó/subió este mes", o pregunte si conviene adelantar campañas antes de temporada. NO usar para decidir si la cuenta escala en general (eso es google-ads-mcp) ni para planificar keywords nuevas desde el brief (eso es keywords-google-ads).
+description: Dice hacia dónde se mueve la demanda de lo que vende el cliente y qué hacer con su cuenta de Google Ads. Cruza tres fuentes - los términos de búsqueda REALES de la cuenta mes a mes (archivo «Estacionalidad — <Cliente>», interno, que escribe solo el Ads Script), la tendencia de 5 años de Google Trends en España (automatizada, sin navegador) y lo que el servicio ofrece DE VERDAD según su landing actual. Saca qué términos crecen y cuáles se hunden año a año, si hay estacionalidad real o la ha fabricado la gestión de la cuenta, qué demanda no se está capturando, y en qué meses se deja dinero sobre la mesa. Filtra siempre la marca y todo lo que el servicio no puede cumplir (un servicio online no compra «centro de…»). Entrega un Google Doc con veredicto y acciones ordenadas. Usar cuando alguien diga "estacionalidad de <cliente>", "tendencias de <cliente>", "en qué meses invertimos más", "qué keywords crecen", "hacia dónde va el mercado", "por qué bajó/subió este mes", o pregunte si conviene adelantar campañas. NO usar para decidir si la cuenta escala en general (eso es google-ads-mcp) ni para planificar keywords desde cero desde el brief (eso es keywords-google-ads).
 ---
 
-# Estacionalidad de Google Ads: en qué meses hay que estar
+# Estacionalidad y tendencia de Google Ads
 
-La pregunta que responde: **¿en qué meses del año la gente busca esto, y estamos poniendo el dinero
-cuando toca?**
-
-La mayoría de las cuentas reparten el presupuesto plano todo el año. Si la demanda no es plana —y casi
-nunca lo es— eso significa dos errores a la vez: se pierde volumen en los meses buenos y se quema
-dinero en los flojos.
-
-> ## 📐 El dato propio manda sobre Google Trends
-> Trends dice cuándo busca **el mercado entero**. La cuenta dice cuándo busca **quien acaba
-> comprándole a este cliente**, en su zona y con su oferta. Cuando los dos se contradicen, gana la
-> cuenta. Trends entra al final, y solo para una cosa: saber si el patrón se repite años atrás o fue
-> una casualidad de este año.
+La pregunta de partida era **«¿en qué meses hay que invertir más?»**. Probada contra una cuenta real,
+la respuesta útil resultó ser otra: **¿hacia dónde se está moviendo la demanda, y la cuenta va con
+ella o contra ella?** La estacionalidad mensual es una parte pequeña de eso; la tendencia de varios
+años y el encaje con el servicio pesan mucho más.
 
 > ## ⛔ Solo lectura
-> Esta skill lee hojas y propone un calendario. **No toca la cuenta de Google Ads**: subir o bajar un
-> presupuesto lo hace una persona, a mano, después de aprobarlo.
+> Lee hojas y Trends y propone. No toca la cuenta de Google Ads: mover presupuestos o keywords lo hace
+> una persona después de aprobarlo.
+
+> ## 📐 El servicio manda sobre los datos
+> Un término que crece un 200 % no vale nada si el cliente no puede cumplir lo que pide. Antes de
+> recomendar cualquier keyword, se comprueba contra lo que el servicio ofrece **hoy** (paso 0).
 
 ---
 
-## Lo que hace falta antes de empezar
+## Las tres fuentes y lo que aporta cada una
 
-Un archivo **aparte del reporte del cliente**, llamado «Estacionalidad — <Cliente>», con dos pestañas:
-
-| Pestaña | Qué trae | Quién la escribe |
+| Fuente | Qué dice | Lo que NO puede decir |
 |---|---|---|
-| `terminos-mes` | término de búsqueda × mes: impresiones, clics, coste, conversiones | el Ads Script, cada mañana |
-| `is-mes` | campaña × mes: cuota de impresiones y **por qué** se pierde | el Ads Script, cada mañana |
+| **La cuenta** (Ads Script → «Estacionalidad — Cliente») | Cuándo compra quien ya llega, a qué coste, qué se pierde y por qué | Lo que nunca se ha pujado; lo que pasó antes de que existiera la cuenta |
+| **Google Trends** (`trends.py`, `descubrir.py`) | Si el mercado entero crece o se hunde, término a término, 5 años; qué búsquedas suben | Los términos de cola larga (quedan bajo su umbral); si el cliente puede cumplirlos |
+| **El servicio** (landing actual + Dirección) | Qué se ofrece de verdad y qué no | Nada de volumen: es el filtro, no el dato |
 
-**Por qué en otro archivo y no en el del reporte**: el de reportes lo abre el cliente, y miles de
-filas de términos ahí son ruido; además, regenerar esa hoja borra las pestañas que no son de la
-plantilla. Este archivo es **interno**: no se comparte con el cliente.
-
-El Ads Script lo crea solo la primera vez y escribe su URL en el registro. Si no está:
-- Mira la columna `actualizado`: si tiene fecha de hoy, el script corrió bien.
-- Si la pestaña no existe, el script de esa cuenta todavía es el viejo. Hay que actualizarlo
-  (está en `~/Desktop/SCRIPTS-GOOGLE-ADS/<cliente>.js`) y darle a *Previsualizar* en Google Ads.
-
-**Cuánto histórico hace falta**: el script guarda **24 meses**. Con menos de **2 años** no se puede
-separar *estacionalidad* de *tendencia* — una cuenta que crece todos los meses parece tener «temporada
-alta» en diciembre solo porque es el mes más reciente. Con 12 meses o menos se dice claramente:
-**«esto es una foto, no un patrón»**, y se usa como hipótesis, no como plan.
+Ninguna basta sola. La cuenta sin Trends confunde gestión con temporada. Trends sin el servicio
+recomienda lo que no se vende. El servicio sin datos es intuición.
 
 ---
 
-## Paso 0.5 · Bajar los datos y lanzar el cálculo
+## Paso 0 · Qué ofrece el servicio HOY — y qué no
 
-No se abre la hoja a mano ni se copian celdas. Un comando lo hace todo:
+**Esto va primero y no se salta.** De aquí salen dos listas que se pasan a todos los scripts:
+
+1. **Leer la landing actual** (la que recibe el tráfico de Google, no la home). Es la fuente más fiel
+   de lo que se vende hoy.
+2. **Contrastar con el brief** del Drive (`0. Onboarding`). Cuidado: el brief puede ser de hace meses
+   y describir líneas que ya no se trabajan en Google. **Si el brief y la landing no coinciden, se
+   pregunta a Dirección antes de seguir.** Él sabe qué se está vendiendo; el brief sabe qué se pensaba vender.
+3. Anotar:
+   - **`--marca`**: el nombre del cliente y cómo lo escribe la gente.
+   - **`--excluir`**: las palabras de lo que el servicio **no** ofrece. Ejemplos:
+     - servicio online sin ingreso → `centro,clinica,ingreso,internamiento,residencial,hospital,cerca de mi`
+     - servicio local en una ciudad → los nombres de las demás ciudades
+     - solo empresas → `particular,gratis,casero`
+   - **Los conceptos del servicio**, en el lenguaje de la landing: son las semillas de Trends.
+
+**Caso real que originó este paso** (23-09-2026): el análisis recomendó pujar «centro de adicciones»
+porque crecía un 199 % en cinco años. El cliente es 100 % online, sin ingreso: quien busca «centro»
+quiere un sitio adonde ir. Habría sido tráfico caro que no convierte nunca. Con `--excluir`, desaparece;
+y lo que queda (terapia online +109 %, psicólogo online +69 %) sí es lo que el cliente vende.
+
+## Paso 1 · Los datos de la cuenta
+
+Hace falta el archivo **«Estacionalidad — \<Cliente\>»**, interno, con las pestañas `terminos-mes` e
+`is-mes`. Lo escribe el Ads Script cada mañana; se monta con `INSTALACION.md` (15 minutos por cliente).
 
 ```bash
 python3 ~/.claude/skills/estacionalidad-google-ads/scripts/estacionalidad.py \
-  "<URL o id de la hoja del cliente>" \
-  --marca "nombre del cliente,variantes de su marca"
+  "<URL del archivo de estacionalidad>" --marca "<marca>"
 ```
 
-Baja la hoja entera con **rclone** (el conector de Drive no vale: solo exporta la primera pestaña),
-lee `datos-google-terminos` y `datos-google-is`, y saca los índices, la cuota perdida por causa y las
-familias. Opciones: `--familias familias.json` para agrupar con criterio propio, `--top N`,
-`--remoto otro:` si el remoto de rclone no se llama `gdrive:`.
+Saca, por mes: el índice de búsquedas, de clics y de conversiones; el gasto y el coste por lead; y la
+cuota de impresiones perdida **separada por presupuesto y por ranking**.
 
-**`--marca` no es opcional en la práctica.** Ver abajo por qué.
+- **La marca, siempre fuera.** Quien busca al cliente por su nombre ya lo conocía: mide notoriedad,
+  no demanda. En la cuenta de prueba, 74 filas de marca sobre 5.750 movían la temporada alta de mes.
+- **Menos de 24 meses = hipótesis.** Con un año no se distingue temporada de crecimiento.
 
-## Paso 1 · Agrupar en familias, no términos sueltos
-
-Un término suelto («reparar caldera urgente madrid») tiene pocos datos y mucho ruido. Se agrupa por
-**familia**: el trozo común que define la intención.
-
-- familia «urgencias» → todo lo que lleve *urgente*, *avería*, *no funciona*, *ahora*
-- familia «mantenimiento» → *revisión*, *mantenimiento*, *contrato*, *anual*
-- familia «instalación» → *instalar*, *cambiar*, *presupuesto*, *nueva*
-
-Las familias salen de mirar los términos reales, no de una lista inventada. Un término puede estar en
-una sola familia: si encaja en dos, manda la palabra que indica **urgencia o dinero**.
-
-Por familia y por mes se suman: impresiones, clics, conversiones y coste.
-
-## Paso 2 · El índice de estacionalidad
-
-Para cada familia:
-
-```
-índice del mes = (media de ese mes en los años disponibles ÷ media de TODOS los meses) × 100
-```
-
-- **100** = un mes del montón.
-- **140** = ese mes tiene un 40 % más de demanda que la media.
-- **60** = un 40 % menos.
-
-Se calcula **tres veces**, con tres magnitudes distintas, y hay que mirar las tres:
-
-| Con qué | Qué te dice |
-|---|---|
-| **impresiones** | cuándo **busca** la gente (demanda pura) |
-| **clics** | cuándo **hace caso** al anuncio |
-| **conversiones** | cuándo **compra** — el único que manda para mover dinero |
-
-**Cuando no coinciden, ahí está el hallazgo.** Un mes con muchas impresiones y pocas conversiones es
-gente mirando, no comprando: no merece más presupuesto, merece otro mensaje. El caso contrario —pocas
-búsquedas pero altísima conversión— suele ser el mes más rentable del año y casi nadie lo ve.
-
-**Aviso que hay que escribir siempre en el informe**: las impresiones dependen del presupuesto que se
-puso ese mes. Si en julio se gastó la mitad, julio parecerá flojo aunque la demanda estuviera intacta.
-Por eso existe el paso 3.
-
-## Paso 3 · Cruzar con lo que se dejó escapar
-
-De `datos-google-is`, por mes:
-- **IS perdida por presupuesto** → había demanda y **no se pagó**. Esto se compra con dinero.
-- **IS perdida por ranking** → había demanda y no se ganó la subasta. Esto **no se arregla con
-  presupuesto**: es relevancia, calidad del anuncio y landing.
-
-El cruce que vale oro:
-
-> **mes con índice de conversión alto + IS perdida por presupuesto alta = el mes donde se está
-> dejando dinero sobre la mesa.** Ahí es donde sube el presupuesto, y con números para defenderlo.
-
-Y el contrario: mes con índice bajo y IS perdida alta **por ranking** → no es un problema de
-temporada, es un problema de cuenta, y subir presupuesto no lo arregla.
-
-## Paso 4 · Google Trends: ¿el patrón es del mercado o lo he fabricado yo?
-
-**Este paso no es opcional.** Sin él no se sabe si la estacionalidad que muestran los datos viene de
-la demanda o de cómo se ha gestionado la cuenta — y son dos planes opuestos.
+## Paso 2 · La tendencia de varios años — lo que más pesa
 
 ```bash
-python3 scripts/trends.py "<URL del archivo de estacionalidad>" --marca "cliente" --top 9
+python3 ~/.claude/skills/estacionalidad-google-ads/scripts/trends.py \
+  --terminos "<conceptos del servicio, 6-10>" --excluir "<lo que no se ofrece>"
 ```
 
-Coge solo los términos **que más convierten**, los consulta en lote con término ancla y devuelve el
-índice mensual de cada uno, en la misma escala. Sin navegador y sin API de pago; el detalle de cómo
-esquiva las dos trampas de Trends está en `references/trends.md`.
+Devuelve dos tablas. **La que importa es la segunda: el volumen medio de cada año.** Responde a
+«¿qué ha pasado en otros años?», que es la pregunta real. El índice mensual (la primera) promedia los
+años y **aplana justo lo que interesa**: un término que se hunde y otro que crece pueden dar el mismo
+índice mensual.
 
-**Cómo se cruza con el paso 2:**
+Lectura:
+- **Un término que cae un 25 % o más en cinco años** está perdiendo mercado aunque hoy convierta.
+- **Uno que sube** es hacia donde se mueve la demanda.
+- Buscar **el patrón de lenguaje**, no términos sueltos. En la prueba real: se hundía todo lo que
+  obliga a ponerse una etiqueta («alcohólicos anónimos» −46 %, «alcoholismo» −21 %) y crecía todo lo
+  que describe una acción o un formato («dejar de beber» +43 %, «terapia online» +109 %). Ese patrón
+  es el hallazgo; los números son la prueba.
+
+**Semillas buenas y malas.** Trends solo publica conceptos con volumen: «tratamiento alcoholismo
+madrid» devuelve ceros. `trends.py` recorta ciudades y arranques de frase si lee de la cuenta, pero lo
+mejor es darle **conceptos de 1-3 palabras en el lenguaje de la landing**. Un término con `vol` por
+debajo de ~10 no es fiable: sus picos (631, 1.150) son divisiones por casi cero.
+
+## Paso 3 · La demanda que no se está capturando
+
+```bash
+python3 ~/.claude/skills/estacionalidad-google-ads/scripts/descubrir.py \
+  --semillas "<conceptos>" --excluir "<lo que no se ofrece>" \
+  --hoja "<URL del archivo de estacionalidad>" --marca "<marca>"
+```
+
+Por cada concepto, Trends da las búsquedas **relacionadas** y las que están **en aumento**. Cruzadas
+con lo que la cuenta ya recibe, queda lo que nadie trabaja. Filtra ruido (famosos, series, «qué es…»)
+y, con `--excluir`, lo que el servicio no puede cumplir.
+
+**Todo lo que sale se revisa a mano antes de proponerlo.** El filtro de «ya se puja» es laxo: una
+cuenta con concordancia amplia recibe miles de términos distintos y casi todo acaba pareciendo
+cubierto. Que un término haya aparecido en la cuenta no significa que se trabaje.
+
+## Paso 4 · El cruce: ¿temporada del mercado o de la gestión?
 
 | La cuenta | Trends | Qué significa | Qué se hace |
 |---|---|---|---|
-| picos marcados | mismos picos | estacionalidad real del mercado | calendario de presupuesto |
-| picos marcados | **plano** | los picos los hizo la gestión | **arreglar la cuenta, no el calendario** |
+| picos marcados | mismos picos | estacionalidad real | calendario de presupuesto, 2-3 semanas antes del pico |
+| picos marcados | **plano** | **los picos los hizo la gestión** | **estabilizar y arreglar la cuenta, no el calendario** |
 | plana | picos | se está perdiendo la temporada | entrar antes, ampliar términos |
-| plana | plana | no hay nada estacional que explotar | mirar otras palancas |
+| plana | plana | no hay nada estacional | otras palancas: tendencia, relevancia |
 
-En la prueba real del 23-09-2026 salió la **segunda fila**, y sin ese cruce el informe habría
-propuesto un calendario para un mercado que resultó ser plano.
+Señal fuerte de la segunda fila: **el mejor mes de la cuenta coincide con uno flojo del mercado**. En
+la prueba real, septiembre era el mejor de la cuenta (índice 177) y de los peores del mercado (90).
 
-## Paso 5 · El calendario
+Y siempre mirar la **cuota perdida por ranking**. Si pasa del 40 % todo el año, esa es la bolsa más
+grande de la cuenta y no la arregla ningún calendario: es relevancia de anuncio, keyword y landing.
 
-```markdown
-# Estacionalidad — <Cliente> · <meses de histórico> · <moneda>
+## Paso 5 · El informe
 
-## El resumen en tres líneas
-Temporada alta: <meses>. Temporada baja: <meses>.
-Lo que hay que cambiar: <la acción principal>.
-Lo que esto vale: <dinero al mes o al año, con su cálculo>.
+Estructura, en este orden:
 
-## Índice por familia y mes
-| Familia | E | F | M | A | M | J | J | A | S | O | N | D |
-(uno por magnitud: impresiones, clics y conversiones)
+1. **Lo que hay que saber** — tres párrafos: hacia dónde va el mercado, si hay temporada o no, y el
+   problema de fondo. Con el veredicto en una línea.
+2. **Qué sube y qué baja en cinco años** — la tabla anual, y el patrón de lenguaje explicado.
+   Por qué eso va a favor o en contra de cómo está posicionado el cliente.
+3. **La estacionalidad** — la tabla mensual del mercado, dicha en su tamaño real (un ±15 % no es una temporada).
+4. **Lo que hace la cuenta** — índices, gasto y coste por lead por mes.
+5. **La cuota perdida** — presupuesto frente a ranking.
+6. **Qué haría, por orden** — acción, por qué (con el número), confianza. **Solo acciones que el
+   servicio puede cumplir.** Y un apartado explícito de lo que NO se haría y por qué.
+7. **Lo que no se puede calcular** — con el motivo.
 
-## Dónde se está dejando dinero
-| Mes | Índice conv. | IS perdida presupuesto | Leads que se escapan | Dinero |
-
-## Los que se adelantan
-Familias cuyo pico llega antes que el del resto: son la señal de que la temporada arranca.
-Si «presupuesto» sube en febrero y «instalación» en abril, hay que estar en febrero.
-
-## Calendario de presupuesto
-| Mes | Presupuesto actual | Propuesto | Por qué | Cuándo se cambia |
-Los cambios se hacen **2-3 semanas ANTES** del mes bueno: Smart Bidding necesita aprender,
-y los 7 días siguientes a tocar el presupuesto no cuentan.
-
-## Lo que no se puede decir con estos datos
-```
-
-### Dónde se entrega — NUNCA en `.md`
-El informe va como **Google Doc** en el Drive del cliente, en su carpeta **`6. Reportes`**
-(`i_<Cliente>/c_<Cliente>/6. Reportes/`). Un `.md` en el Mac no lo abre nadie, no se comenta y no se
-comparte: no cuenta como entregado.
-
-Cómo: generar el `.docx` con `python-docx` y subirlo con rclone a esa carpeta. **rclone NO convierte a
-Google Doc** aunque se le pase `--drive-import-formats docx`: sube el fichero tal cual. La conversión
-final se hace en Drive (botón derecho → Abrir con → Documentos de Google → Archivo → Guardar como
-Documento de Google) y **se avisa de ese paso al entregar**.
+**Dónde se entrega:** Google Doc en `6. Reportes` del Drive del cliente. **Nunca un `.md`.** Ver
+«Entrega» abajo.
 
 ---
 
-## Errores que cuestan dinero
-- **No separar la marca.** Quien busca al cliente por su nombre **ya lo conocía**: eso no es demanda
-  de mercado, es notoriedad. Medido en una cuenta real (22-09-2026): 74 filas de marca sobre 5.750
-  movían el pico de octubre de **120 a 394**. Sin separarla, el calendario manda el dinero al mes
-  equivocado. Siempre `--marca`.
-- **Confundir tendencia con temporada.** Una cuenta que creció todo el año tiene los últimos meses
-  altos por crecimiento, no por estación. Con 2 años se ve; con 1 no.
-- **Leer las impresiones sin mirar el presupuesto de ese mes.** Un mes sin dinero parece un mes sin
-  demanda. Siempre al lado de la IS perdida.
-- **Subir el presupuesto el día 1 del mes bueno.** Llega tarde: 2-3 semanas antes.
-- **Decidir con una familia de 3 conversiones.** Sin un mínimo de volumen no hay patrón, hay ruido.
-  Se dice y se deja fuera.
-- **Tomarse Google Trends como un volumen.** No lo es: es un índice relativo de 0 a 100 dentro de esa
-  consulta concreta.
-- **Meter esto en la hoja del cliente.** El reporte lo abre él; los términos de búsqueda son
-  material interno, y regenerar esa hoja se llevaría las pestañas por delante. Archivo aparte.
+## Errores que ya se cometieron (y cuestan dinero)
+
+- **Recomendar lo que el servicio no ofrece.** «Centro de adicciones» +199 % a un servicio online.
+  → Paso 0, `--excluir`.
+- **Fiarse de un brief viejo.** El de junio describía una línea de alimentación que la cuenta no
+  trabaja; el informe la analizó entera y hubo que tirarla. → La landing actual manda; ante la duda, Dirección.
+- **Confirmar lo obvio.** «El mercado del alcohol es plano» no le sirve a nadie. El valor está en lo
+  que no se ve: la tendencia de años, el lenguaje que cambia, la demanda sin capturar.
+- **Promediar los años.** El índice mensual esconde que un término se está hundiendo. → Paso 2, la
+  tabla anual primero.
+- **Consultar la cola larga en Trends.** Da ceros. → Conceptos cortos, en el lenguaje de la landing.
+- **Dejar la marca dentro.** Cambia la temporada alta entera.
+- **Leer las impresiones sin el presupuesto de ese mes.** Un mes sin dinero parece un mes sin demanda.
+- **Subir presupuesto el día 1 del mes bueno.** Llega tarde: 2-3 semanas antes.
+- **Meter los datos en la hoja del cliente.** Son internos y regenerar esa hoja los borraría. Archivo aparte.
+- **Entregar en `.md`.** No lo abre nadie.
+
+---
+
+## Entrega
+
+El informe va como **Google Doc** a `i_<Cliente>/c_<Cliente>/6. Reportes/`.
+
+Límites comprobados de las dos vías de escritura:
+- **rclone** escribe en esa carpeta pero **no convierte a Google Doc** (sube `.docx` aunque se le pase
+  `--drive-import-formats docx`).
+- **El conector de Drive** sí crea Google Docs nativos (HTML en base64 + `mimeType:
+  application/vnd.google-apps.document`), pero va con la cuenta personal de Dirección y **no puede escribir
+  en las carpetas del Drive de trabajo**.
+
+Así que: `.docx` con `python-docx` → rclone a `6. Reportes` → **avisar a Dirección** de que falta
+convertirlo (botón derecho → Abrir con → Documentos de Google). No dejar ese paso sin decir.
+
+---
+
+## Archivos
+
+| Archivo | Para qué |
+|---|---|
+| `INSTALACION.md` | Montar el Ads Script en una cuenta, paso a paso. Una vez por cliente. |
+| `scripts/generar_script_cliente.py` | Genera el Ads Script de un cliente, relleno y sin mencionar a otros. |
+| `scripts/estacionalidad.py` | Paso 1: la cuenta, mes a mes. |
+| `scripts/trends.py` | Paso 2: tendencia anual y estacionalidad del mercado, en lote. |
+| `scripts/descubrir.py` | Paso 3: búsquedas relacionadas y en aumento que no se capturan. |
+| `references/trends.md` | Cómo funciona la consulta a Trends y cómo leerla sin engañarse. |

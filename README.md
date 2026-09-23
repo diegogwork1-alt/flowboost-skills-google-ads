@@ -42,7 +42,7 @@ Y después, en Claude: `guíame en la primera configuración`
 |---|---|
 | `google-ads-mcp` | Audita cuentas de Google Ads leyendo datos reales por MCP y cruzándolos con GA4 y Search Console. Saca las cuatro métricas que la interfaz no da - CPA… |
 | `keywords-google-ads` | Genera un .md de investigación de keywords bien curradas para Google Ads (campañas de Búsqueda) a partir del brief del cliente. SOLO se ejecuta si el … |
-| `estacionalidad-google-ads` | Averigua en qué meses del año la gente busca de verdad lo que vende el cliente, y convierte eso en un calendario de presupuesto para Google Ads. Parte… |
+| `estacionalidad-google-ads` | Dice hacia dónde se mueve la demanda de lo que vende el cliente y qué hacer con su cuenta de Google Ads. Cruza tres fuentes - los términos de búsqueda… |
 
 Cada skill lleva un **`LEEME.md`** con lo que hay que tener en cuenta antes de usarla: qué
 necesita, qué no puede hacer y dónde deja las cosas.

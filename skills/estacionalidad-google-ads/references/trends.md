@@ -19,7 +19,7 @@ calendario no arregla nada: lo que hay que mirar es la gestión.
 `scripts/trends.py` lo hace solo:
 
 ```bash
-python3 scripts/trends.py "<URL del archivo de estacionalidad>" --marca "cliente" --top 9
+python3 scripts/trends.py --terminos "<conceptos del servicio>" --excluir "<lo que no ofrece>"
 ```
 
 Lee los términos **que más convierten** de la cuenta, los consulta en lote y devuelve el índice
@@ -46,20 +46,30 @@ espera entre lotes; pedir deprisa vuelve a bloquear.
 
 ## Lo que salió en la prueba real (23-09-2026)
 
-Cuenta de servicios de adicciones, España, 9 términos, 5 años:
+Servicio online de adicciones, sin ingreso. España, 5 años.
 
-| término | vol | forma |
+**Tendencia anual — lo que más importa:**
+
+| término | 2021→2026 | ¿el servicio lo cumple? |
 |---|---|---|
-| dejar de beber alcohol | 492 | **plana**: 79-119 todo el año |
-| como dejar el alcohol | 100 | variable, pero con poco volumen absoluto |
-| los otros 7 | 3-6 | sin volumen publicable |
+| terapia online | **+109 %** | sí |
+| dejar el alcohol | +75 % | sí |
+| psicólogo online | +69 % | sí |
+| dejar de beber | +43 % | sí |
+| alcoholismo | −21 % | sí, pero se hunde |
+| alcohólicos anónimos | −46 % | sí, pero se hunde |
+| ~~centro de adicciones~~ | ~~+199 %~~ | **NO: pide un sitio físico** |
 
-**El mercado no tiene estacionalidad.** Y esa misma cuenta mostraba en sus propios datos septiembre
-a 177 y marzo a 28. Conclusión: **esos picos no son del mercado, son de la cuenta** — de cuánto se
-invirtió cada mes y de cómo estaban las campañas. Sin Trends, el informe habría propuesto un
-calendario estacional para un mercado que es plano.
+Dos lecciones en una tabla:
 
-Esa es exactamente la comprobación que justifica este paso.
+1. **El lenguaje se movía**: bajaba lo que obliga a ponerse una etiqueta, subía lo que describe una
+   acción o un formato. Eso iba a favor del cliente, que se posiciona para «quien no se reconoce como
+   adicto» — y su cuenta pujaba justo los términos que se hundían.
+2. **El término que más crecía era el único que no podía vender.** Sin `--excluir centro,clinica,
+   ingreso`, el informe lo habría puesto como acción número uno.
+
+**Estacionalidad mensual:** casi nula (±15 % en verano), mientras la cuenta oscilaba seis veces entre
+su peor y su mejor mes. Los picos eran de gestión, no de demanda.
 
 ## Lo que no se puede hacer
 

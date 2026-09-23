@@ -17,12 +17,37 @@ CÓMO EVITA LAS DOS TRAMPAS DE TRENDS
 
 No usa pytrends (archivado en 2025) ni ninguna API de pago.
 """
-import argparse, http.cookiejar, json, sys, time, urllib.parse, urllib.request
+import argparse, http.cookiejar, json, re, sys, time, urllib.parse, urllib.request
 from collections import defaultdict
 
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/140 Safari/537")
 MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
+
+# Lo que hay que quitar para que un término de la cuenta se convierta en algo que Trends publique.
+# Trends solo da datos de conceptos con volumen: "tratamiento alcoholismo madrid" devuelve ceros,
+# "tratamiento alcoholismo" no. Las ciudades y los arranques de frase parten el volumen en trozos
+# demasiado pequeños para su umbral.
+CIUDADES = {'madrid','barcelona','valencia','sevilla','bilbao','zaragoza','malaga','murcia',
+            'palma','alicante','cordoba','valladolid','vigo','gijon','granada','coruna','santander',
+            'pamplona','donostia','san sebastian','espana', 'online', 'cerca de mi', 'cerca'}
+ARRANQUES = ('como ', 'cómo ', 'quiero ', 'necesito ', 'donde ', 'dónde ', 'que ', 'qué ',
+             'el mejor ', 'mejor ', 'un ', 'una ', 'los ', 'las ', 'me ')
+
+
+def raiz(termino):
+    """Convierte un término de la cuenta en el concepto que Trends sí publica."""
+    t = ' '.join(str(termino).lower().split())
+    for a in ARRANQUES:
+        if t.startswith(a):
+            t = t[len(a):]
+    for c in sorted(CIUDADES, key=len, reverse=True):
+        t = re.sub(rf'\b{re.escape(c)}\b', '', t)
+    t = ' '.join(t.split())
+    palabras = t.split()
+    # Más de 4 palabras es cola larga: Trends casi nunca la publica
+    return ' '.join(palabras[:4]) if palabras else ''
+
 
 
 def sesion(geo):
@@ -64,6 +89,15 @@ def lote(op, keywords, geo, periodo, reintentos=3):
     return None
 
 
+def tendencia_anual(serie, col):
+    """Volumen medio por año. Responde a «¿esto crece o se hunde?», que es distinto
+    de la estacionalidad: el índice mensual promedia los años y esconde justo esto."""
+    por_anio = defaultdict(list)
+    for p in serie:
+        por_anio[time.gmtime(int(p["time"])).tm_year].append(p["value"][col])
+    return {a: sum(v)/len(v) for a, v in por_anio.items()}
+
+
 def indice_mensual(serie, col):
     """Media del mismo mes en todos los años -> índice 100 = mes medio."""
     por_mes = defaultdict(list)
@@ -100,8 +134,23 @@ def terminos_de_la_cuenta(hoja, marca, top, remoto):
             continue
         acum[t]['conv'] += float(d.get('conversiones') or 0)
         acum[t]['clics'] += float(d.get('clics') or 0)
-    orden = sorted(acum.items(), key=lambda x: (-x[1]['conv'], -x[1]['clics']))
-    return [t for t, _ in orden[:top]], acum
+    # Agrupar por RAÍZ: varias frases largas de la cuenta se funden en el concepto que Trends publica
+    raices = defaultdict(lambda: defaultdict(float))
+    for t, v in acum.items():
+        r = raiz(t)
+        if not r:
+            continue
+        raices[r]['conv'] += v['conv']
+        raices[r]['clics'] += v['clics']
+        raices[r]['frases'] += 1
+    orden = sorted(raices.items(), key=lambda x: (-x[1]['conv'], -x[1]['clics']))
+    elegidas = [t for t, _ in orden[:top]]
+    print(f"{len(acum)} términos de la cuenta -> {len(raices)} conceptos -> {len(elegidas)} consultados")
+    for t in elegidas:
+        v = raices[t]
+        print(f"   {t:<34} {v['conv']:4.0f} conv · {v['frases']:.0f} variantes")
+    print()
+    return elegidas, raices
 
 
 def main():
@@ -113,15 +162,27 @@ def main():
     ap.add_argument('--geo', default='ES')
     ap.add_argument('--periodo', default='today 5-y')
     ap.add_argument('--remoto', default='gdrive:')
+    ap.add_argument('--excluir', default='',
+                    help='palabras de lo que el servicio NO ofrece (p. ej. "centro,clinica,ingreso"). '
+                         'Todo término que las contenga se descarta: aunque crezca, no se puede cumplir')
     a = ap.parse_args()
 
     marca = [p.strip().lower() for p in a.marca.split(',') if p.strip()]
+    excluir = [p.strip().lower() for p in a.excluir.split(',') if p.strip()]
     if a.terminos:
         terminos, acum = [t.strip() for t in a.terminos.split(',') if t.strip()], {}
     elif a.hoja:
         terminos, acum = terminos_de_la_cuenta(a.hoja, marca, a.top, a.remoto)
     else:
         sys.exit(__doc__)
+    if excluir:
+        fuera = [t for t in terminos if any(x in t.lower() for x in excluir)]
+        terminos = [t for t in terminos if t not in fuera]
+        if fuera:
+            print(f"Descartados por no encajar con el servicio: {', '.join(fuera)}\n")
+    else:
+        print("⚠️  Sin --excluir. Si el servicio NO ofrece algo (lugar físico, ingreso, un producto),")
+        print("   los términos que lo piden saldrán aquí aunque nunca vayan a convertir.\n")
     if not terminos:
         sys.exit("✗ No hay términos que consultar")
 
@@ -143,25 +204,41 @@ def main():
             continue
         idx_a, med_a = indice_mensual(s, 0)
         if nivel_ancla is None:
-            nivel_ancla, salida[ancla] = med_a, (idx_a, 100.0)
+            nivel_ancla, salida[ancla] = med_a, (idx_a, 100.0, tendencia_anual(s, 0))
         for j, k in enumerate(grupo[1:], start=1):
             idx, med = indice_mensual(s, j)
             rel = round(med / med_a * 100, 1) if med_a else 0   # volumen relativo al ancla
-            salida[k] = (idx, rel)
+            salida[k] = (idx, rel, tendencia_anual(s, j))
         time.sleep(4)
 
     print(f"\n{'='*74}\nÍNDICE POR MES (100 = mes medio de ESE término)")
     print(f"{'término':<34}" + "".join(f"{m:>5}" for m in MESES) + "   vol")
-    for k, (idx, rel) in salida.items():
+    for k, (idx, rel, _) in salida.items():
         if not idx or all(v == 0 for v in idx.values()):
             continue
         fila = "".join(f"{idx.get(m, 0):>5}" for m in range(1, 13))
         print(f"{k[:33]:<34}{fila}  {rel:>5.0f}")
-    sin = [k for k, (i, _) in salida.items() if not i or all(v == 0 for v in i.values())]
+    sin = [k for k, (i, _, _) in salida.items() if not i or all(v == 0 for v in i.values())]
     if sin:
         print(f"\nSin volumen suficiente en Trends (devuelve ceros): {', '.join(sin)}")
         print("Eso no significa que no se busquen: significa que están por debajo del umbral que")
         print("Trends publica. Para esos, manda el dato de la cuenta.")
+    # ── Tendencia interanual: ¿crece o se hunde? ──
+    anios = sorted({a for _, _, t in salida.values() for a in t})
+    if len(anios) > 2:
+        print(f"\n{'='*74}\nTENDENCIA INTERANUAL — volumen medio de cada año")
+        print(f"{'término':<34}" + "".join(f"{a:>7}" for a in anios) + f"   {anios[0]}→{anios[-1]}")
+        for k, (_, _, t) in salida.items():
+            if not t.get(anios[0]):
+                continue
+            fila = "".join(f"{t.get(a, 0):>7.0f}" for a in anios)
+            camb = (t[anios[-1]] / t[anios[0]] - 1) * 100 if t[anios[0]] else 0
+            aviso = "  ⚠" if abs(camb) >= 25 else ""
+            print(f"{k[:33]:<34}{fila}   {camb:+6.0f} %{aviso}")
+        print(f"\nEl primer y el último año son PARCIALES: la serie son 5 años hacia atrás desde hoy.")
+        print("Un término que cae un 25 % o más en cinco años está perdiendo mercado aunque hoy")
+        print("siga convirtiendo. Uno que sube es donde se está moviendo la demanda.")
+
     print("\n«vol» = volumen relativo al ancla (ancla = 100). Compara tamaños entre términos.")
     print("Trends mide TODO el mercado del país: si difiere de la cuenta, la cuenta manda para")
     print("decidir presupuesto, y Trends sirve para saber si el patrón es de años o de este año.")
