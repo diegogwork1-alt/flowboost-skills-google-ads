@@ -58,10 +58,13 @@ Tiene que salir `✅ Claude Code: …/.claude/skills`.
 
 En **Google Ads**, con la cuenta del cliente seleccionada:
 
-**Herramientas** → **Acciones masivas** → **Scripts**
+En el menú de la izquierda: **Herramientas** → **Acciones en bloque** → **Secuencias de comandos**
 
-- Si ya hay un script (se llamará algo como «reporte» o «datos»), **ábrelo**: hay que sustituirlo.
-- Si no hay ninguno, dale al **«+»** para crear uno.
+(«Secuencias de comandos» es como Google llama a los *scripts* en español. Está entre «Reglas» y
+«Soluciones». Si tu cuenta está en inglés, es **Tools → Bulk actions → Scripts**.)
+
+- Si ya hay uno (se llamará algo como «reporte» o «datos»), **ábrelo**: hay que sustituirlo.
+- Si no hay ninguno, dale al **«+»** azul para crear uno.
 
 ## 2 · Pegar el script nuevo
 
@@ -84,7 +87,7 @@ var CLIENTE   = 'NOMBRE_DEL_CLIENTE';
 
 ## 3 · Autorizar y previsualizar
 
-1. Botón **«Autorizar»** (solo la primera vez). Entra con el Google que tiene **permiso de edición**
+1. Botón **«Autorizar»** o **«Vista previa»** según la versión (solo la primera vez pide permisos). Entra con el Google que tiene **permiso de edición**
    sobre la hoja. Si no lo tiene, el script no podrá escribir.
 2. Botón **«Previsualizar»**. Tarda entre 30 segundos y 2 minutos.
 3. Mira el registro de abajo. Tiene que salir algo así:
@@ -116,13 +119,49 @@ cerrar las cifras del día.
 
 Si sustituiste un script que ya estaba programado, la programación se mantiene: no hay que hacer nada.
 
-## 6 · Pedir la estacionalidad
+## 6 · Una vez: preparar rclone (para leer la hoja)
 
-En Claude Code:
+El cálculo baja la hoja con **rclone**. Se configura una sola vez en el ordenador:
+
+```bash
+rclone listremotes
+```
+
+Si sale `gdrive:`, ya está. Si no sale nada, ejecuta `rclone config` y crea un remoto de Google
+Drive llamado `gdrive` (o dile a Claude: *«configúrame rclone con mi Drive»*).
+
+## 7 · Pedir la estacionalidad
+
+En Claude Code, lo fácil:
 
 ```
 Hazme la estacionalidad de <Cliente>
 ```
+
+O directamente el cálculo, que es lo que hace Claude por dentro:
+
+```bash
+python3 ~/.claude/skills/estacionalidad-google-ads/scripts/estacionalidad.py \
+  "<URL de la hoja del cliente>" \
+  --marca "nombre del cliente,como lo escribe la gente"
+```
+
+> ### ⚠️ `--marca` cambia el resultado entero
+> Quien busca al cliente **por su nombre** ya lo conocía: no es demanda del mercado. En la prueba
+> real del 22-09-2026, con la marca dentro el pico era octubre (índice 394); sin ella, el mes
+> fuerte pasaba a ser septiembre y octubre bajaba a 120. Eran **74 filas sobre 5.750**.
+> Si no pones `--marca`, el script te avisa.
+
+Sale por pantalla, en menos de un minuto:
+
+- **Cuántos meses de datos hay** y si dan para un patrón (24+) o solo una hipótesis
+- **Tres índices mes a mes**: cuándo *buscan*, cuándo *hacen clic* y cuándo *compran*
+- **Qué se pierde cada mes** separado en presupuesto y ranking
+- **💰 Los meses donde se deja dinero**: mucha demanda y presupuesto corto a la vez
+- **Las familias de términos** con su pico
+
+Para el documento completo con el calendario de presupuesto, pídeselo a Claude después:
+*«con esto, hazme el calendario de presupuesto de <Cliente>»*.
 
 Sale un documento en `~/Desktop/CLIENTES/<Cliente>/` con:
 

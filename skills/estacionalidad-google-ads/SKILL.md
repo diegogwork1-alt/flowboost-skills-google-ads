@@ -45,6 +45,23 @@ alta» en diciembre solo porque es el mes más reciente. Con 12 meses o menos se
 
 ---
 
+## Paso 0.5 · Bajar los datos y lanzar el cálculo
+
+No se abre la hoja a mano ni se copian celdas. Un comando lo hace todo:
+
+```bash
+python3 ~/.claude/skills/estacionalidad-google-ads/scripts/estacionalidad.py \
+  "<URL o id de la hoja del cliente>" \
+  --marca "nombre del cliente,variantes de su marca"
+```
+
+Baja la hoja entera con **rclone** (el conector de Drive no vale: solo exporta la primera pestaña),
+lee `datos-google-terminos` y `datos-google-is`, y saca los índices, la cuota perdida por causa y las
+familias. Opciones: `--familias familias.json` para agrupar con criterio propio, `--top N`,
+`--remoto otro:` si el remoto de rclone no se llama `gdrive:`.
+
+**`--marca` no es opcional en la práctica.** Ver abajo por qué.
+
 ## Paso 1 · Agrupar en familias, no términos sueltos
 
 Un término suelto («reparar caldera urgente madrid») tiene pocos datos y mucho ruido. Se agrupa por
@@ -146,6 +163,10 @@ Se guarda en `~/Desktop/CLIENTES/<Cliente>/Estacionalidad-Google-Ads-<AAAA-MM>.m
 ---
 
 ## Errores que cuestan dinero
+- **No separar la marca.** Quien busca al cliente por su nombre **ya lo conocía**: eso no es demanda
+  de mercado, es notoriedad. Medido en una cuenta real (22-09-2026): 74 filas de marca sobre 5.750
+  movían el pico de octubre de **120 a 394**. Sin separarla, el calendario manda el dinero al mes
+  equivocado. Siempre `--marca`.
 - **Confundir tendencia con temporada.** Una cuenta que creció todo el año tiene los últimos meses
   altos por crecimiento, no por estación. Con 2 años se ve; con 1 no.
 - **Leer las impresiones sin mirar el presupuesto de ese mes.** Un mes sin dinero parece un mes sin
