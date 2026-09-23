@@ -73,10 +73,17 @@ function main() {
  * Devuelve el libro de ESTACIONALIDAD, creándolo la primera vez.
  * Nunca es el del reporte del cliente: son dos archivos distintos a propósito.
  */
+var _libroCache = null;   // se crea UNA vez por ejecución, no una por pestaña
+
 function libroEstacional() {
-  if (SHEET_URL_ESTACIONAL) return SpreadsheetApp.openByUrl(SHEET_URL_ESTACIONAL);
+  if (_libroCache) return _libroCache;
+  if (SHEET_URL_ESTACIONAL) {
+    _libroCache = SpreadsheetApp.openByUrl(SHEET_URL_ESTACIONAL);
+    return _libroCache;
+  }
 
   var libro = SpreadsheetApp.create('Estacionalidad — ' + CLIENTE);
+  _libroCache = libro;
   // La hoja vacía que trae por defecto estorba: se borra al crear la primera de verdad.
   Logger.log('════════════════════════════════════════════════════════════');
   Logger.log('CREADO el archivo de estacionalidad de ' + CLIENTE + '.');

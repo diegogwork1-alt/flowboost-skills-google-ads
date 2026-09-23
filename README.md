@@ -1,6 +1,6 @@
 # flowboost-skills-google-ads
 
-Google Ads: keywords, auditoría de cuenta y estacionalidad
+Google Ads: conexión, keywords y estacionalidad
 
 ---
 
@@ -40,10 +40,9 @@ Y después, en Claude: `guíame en la primera configuración`
 
 | Skill | Qué hace |
 |---|---|
-| `keywords-google-ads` | Genera un .md de investigación de keywords bien curradas para Google Ads (campañas de Búsqueda) a partir del brief del cliente. SOLO se ejecuta si el … |
 | `google-ads-mcp` | Audita cuentas de Google Ads leyendo datos reales por MCP y cruzándolos con GA4 y Search Console. Saca las cuatro métricas que la interfaz no da - CPA… |
+| `keywords-google-ads` | Genera un .md de investigación de keywords bien curradas para Google Ads (campañas de Búsqueda) a partir del brief del cliente. SOLO se ejecuta si el … |
 | `estacionalidad-google-ads` | Averigua en qué meses del año la gente busca de verdad lo que vende el cliente, y convierte eso en un calendario de presupuesto para Google Ads. Parte… |
-| `reportes-cliente` | Los REPORTES DE RESULTADOS que ve el cliente, en su hoja de cálculo del Drive: **Meta Ads y Google Ads**, cada uno en su pestaña del MISMO archivo (`R… |
 
 Cada skill lleva un **`LEEME.md`** con lo que hay que tener en cuenta antes de usarla: qué
 necesita, qué no puede hacer y dónde deja las cosas.

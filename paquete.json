@@ -1,12 +1,9 @@
 {
   "area": "google-ads",
-  "necesita": [
-    "meta-ads"
-  ],
+  "necesita": [],
   "skills": [
-    "keywords-google-ads",
     "google-ads-mcp",
-    "estacionalidad-google-ads",
-    "reportes-cliente"
+    "keywords-google-ads",
+    "estacionalidad-google-ads"
   ]
 }
