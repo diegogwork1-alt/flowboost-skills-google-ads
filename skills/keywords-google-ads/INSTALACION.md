@@ -24,7 +24,8 @@ su hoja de reportes (`Reporte Ads — <Cliente> — <año>`, en su Drive).
 
 **Importante:** el archivo «Estacionalidad - \<Cliente\>» se crea en el Drive del Google que
 **autoriza** el script. Ese Google tiene que ser el mismo con el que está configurado rclone en
-**tu** Mac (lo ves con `rclone config show gdrive`: el correo aparece en el token), o hay que
+**tu** Mac (lo ves, sin enseñar el token, con
+`python3 ~/.claude/skills/flowboost-empezar/scripts/conectar_drive.py --cuenta`), o hay que
 compartirle el archivo después. Cada persona del equipo tiene su propio rclone: el archivo se
 comparte con el Google de quien vaya a pedir las keywords. Si no, la skill no podrá leerlo.
 
@@ -116,6 +117,7 @@ keywords (paso 0 de `SKILL.md`). Tenla a mano.
 | Salen pocos meses | La cuenta es nueva | La skill entregará una hipótesis, no un patrón. Es lo correcto |
 | Se creó otro archivo nuevo | No se guardó la URL en `SHEET_URL_ESTACIONAL` | Paso 4 |
 | La skill dice que rclone no baja el archivo | El Google que autorizó no es el de rclone | Compartir el archivo con el Google de tu rclone (con ver basta) |
+| rclone avisa `This remote uses rclone's shared Google Drive client_id` | Tu `gdrive:` no tiene cliente propio y dejará de funcionar en 2026 | Paso 2 de la skill `flowboost-empezar` (JSON del cliente + `conectar_drive.py`) |
 
 ## Dos cosas que conviene saber
 

@@ -41,23 +41,46 @@ Si no tiene Homebrew: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.
 Es el paso que más falla y el que más importa: **sin Drive no hay brief, ni branding, ni dónde
 dejar nada**.
 
+⚠️ **Nunca con el client_id compartido de rclone** (dejar `client_id` y `client_secret` en blanco
+en `rclone config`). Google lo retira en 2026 y, el día que lo corte, dejan de funcionar a la vez
+todas las subidas y bajadas de Drive de las skills. El remoto se conecta siempre con un **cliente
+OAuth propio** (un «App de escritorio» de Google Cloud), cargado con el script de esta skill.
+
+**2a · Conseguir el JSON del cliente.** Uno de estos dos caminos:
+
+- **Lo normal (cuenta @flowboostmarketing.com):** pedirle a Dirección el JSON del cliente de la agencia
+  (proyecto `rclone-flowboost`, cliente «App de escritorio»). Se lo pasa **por un canal privado**,
+  nunca por el chat con el agente ni dentro de una skill o un repo. Como la app es **Interna**, solo
+  la pueden autorizar cuentas de flowboostmarketing.com.
+- **Si su cuenta no es de flowboostmarketing.com, o Dirección prefiere que tenga el suyo:** que lo cree
+  él en https://console.cloud.google.com, con su cuenta (unos 10 minutos):
+  1. Crear un proyecto (p. ej. «rclone»).
+  2. *APIs y servicios → Biblioteca* → «Google Drive API» → **Habilitar**.
+  3. *Google Auth Platform → Comenzar*: nombre «rclone», su correo. Público: **Interno** si sale;
+     si no, **Externo** y después *Público → **Publicar aplicación*** («En producción»). En
+     «Prueba», el permiso caduca a los 7 días.
+  4. *Acceso a los datos → Agregar o quitar permisos*, pegar a mano
+     `https://www.googleapis.com/auth/docs,https://www.googleapis.com/auth/drive,https://www.googleapis.com/auth/drive.metadata.readonly`
+     → *Agregar a la tabla* → *Actualizar* → **Save**.
+  5. *Clientes → Crear cliente* → tipo **App de escritorio** → *Crear* → **Descargar JSON**, antes de
+     cerrar el diálogo (después Google ya no deja bajar el secreto).
+
+  Guía oficial: https://rclone.org/drive/#making-your-own-client-id
+
+**2b · Conectar `gdrive:` con ese JSON.** Se le pide **solo la ruta** del archivo. El agente **no
+abre el JSON** ni le pide que pegue el ID o el secreto: se los pasa el script a rclone directamente.
+
 ```bash
-rclone config
+python3 ~/.claude/skills/flowboost-empezar/scripts/conectar_drive.py ~/Downloads/client_secret_XXXX.json
 ```
 
-Y se le va diciendo, una a una, qué teclear:
+(En Windows: `py -3.11 $HOME\.claude\skills\flowboost-empezar\scripts\conectar_drive.py <ruta del JSON>`.)
 
-1. `n` (nuevo remoto)
-2. Nombre: **`gdrive`** ← exacto, en minúsculas. Las skills lo buscan con ese nombre.
-3. Tipo: escribir **`drive`**
-4. `client_id` y `client_secret`: **Enter** (en blanco)
-5. Ámbito: **`1`** (acceso completo)
-6. `root_folder_id`: **Enter**
-7. Service account: **Enter**
-8. Configuración avanzada: **`n`**
-9. Usar navegador: **`y`** → se abre Chrome → **entrar con la cuenta de Flowboost** que le haya
-   dado Dirección, y aceptar
-10. Shared drive: **`n`** · Confirmar: **`y`** · Salir: **`q`**
+El script guarda el JSON junto a `rclone.conf` y crea el remoto **`gdrive`** (exacto, en
+minúsculas: las skills lo buscan con ese nombre), o lo actualiza si ya existía. Luego abre el
+navegador, donde hay que **entrar con la cuenta de Flowboost** que le haya dado Dirección y aceptar. Si
+la app es Externa, saldrá «Google no ha verificado esta aplicación»: *Configuración avanzada → Ir a
+rclone*, porque la app es suya. Al terminar escribe la cuenta y cuántas carpetas ve.
 
 **Comprobarlo de verdad** (no vale con que diga que terminó):
 
@@ -65,8 +88,15 @@ Y se le va diciendo, una a una, qué teclear:
 rclone lsd gdrive: | head -5
 ```
 
-Tiene que salir una lista de carpetas de clientes (`i_…`, `c_…`). Si sale vacío o da error, **no
-está conectado**: se repite el paso 2.
+Tiene que salir una lista de carpetas de clientes (`i_…`, `c_…`) **y no puede salir** el aviso
+`This remote uses rclone's shared Google Drive client_id`. Si sale vacío, da error o sale el aviso,
+**no está bien conectado**: se repite el 2b.
+
+¿Con qué Google está conectado su rclone? Sin enseñar el token:
+
+```bash
+python3 ~/.claude/skills/flowboost-empezar/scripts/conectar_drive.py --cuenta
+```
 
 ## Paso 3 — Su carpeta de trabajo
 
@@ -100,7 +130,7 @@ No se da por terminado hasta que esto funcione:
 rclone lsd gdrive: | wc -l
 ```
 
-Si sale un número mayor que cero, está listo. Entonces se le dice **qué puede pedir ya**, con
+Si sale un número mayor que cero, y sin el aviso del client_id compartido, está listo. Entonces se le dice **qué puede pedir ya**, con
 ejemplos de su área:
 
 - Reportes: *«dame el reporte de \<cliente\>»*, *«da de alta a \<cliente\> en los reportes»*
@@ -124,3 +154,4 @@ ejemplos de su área:
 | «no existe el fichero …» | falta el paquete **fundamentos** → instalarlo también |
 | el copy sale sin criterio | lo mismo: falta **fundamentos**, y no avisa solo |
 | «command not found: rclone» | paso 1 |
+| sale `This remote uses rclone's shared Google Drive client_id` | el remoto está sin cliente propio → paso 2 (2a y 2b) |
